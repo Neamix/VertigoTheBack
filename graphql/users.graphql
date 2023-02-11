@@ -1,0 +1,32 @@
+scalar Email
+
+extend type Query {
+    user(id: ID @eq): User @find 
+    users(input: UserFilterInput): [User] @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\UserQuery@filterUser")
+}
+
+extend type Mutation {
+    upsert(input: UserInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@upsert")
+}
+
+# Types 
+type User {
+    id: ID,
+    email: Email,
+    name: String
+}
+
+# Inputs 
+input UserFilterInput @validator {
+    id: ID,
+    email: Email,
+    name: String
+}
+
+
+input UserInput @validator {
+    email: Email,
+    name: String
+}
+
+
