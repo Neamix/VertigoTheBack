@@ -19,4 +19,9 @@ final class UserMutation
     {
         return User::upsertInstance($args);
     }
+
+    public function loginUser($_, array $args)
+    {
+        return User::login($args);
+    }
 }

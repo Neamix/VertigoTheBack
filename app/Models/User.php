@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+
+use App\Models\Role;
 
 class User extends Authenticatable
 {
@@ -48,6 +52,18 @@ class User extends Authenticatable
         ]);
     }
 
+    static function login($request)
+    {
+        $user = User::where('email', $request['email'])->first();
+        
+        if(! $user || ! Hash::check($request['password'], $user->password))
+        {
+            throw ValidationException::withMessages(['Invalid login']);
+        }
+
+        return $user->createToken('login token')->plainTextToken;
+    }
+
     // Scopes
 
     public function scopeFilter($query,$request)
@@ -57,5 +73,12 @@ class User extends Authenticatable
         }
 
         return $query;
+    }
+
+    //Relations
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 }

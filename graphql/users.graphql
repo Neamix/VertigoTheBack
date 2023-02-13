@@ -7,13 +7,15 @@ extend type Query {
 
 extend type Mutation {
     upsert(input: UserInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@upsert")
+    login(email: String!, password: String): String! @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@loginUser")
 }
 
 # Types 
 type User {
     id: ID,
     email: Email,
-    name: String
+    name: String,
+    role: Role @belongsTo
 }
 
 # Inputs 
@@ -23,10 +25,8 @@ input UserFilterInput @validator {
     name: String
 }
 
-
 input UserInput @validator {
     email: Email,
     name: String
 }
-
 

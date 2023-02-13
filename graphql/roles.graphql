@@ -1,8 +1,14 @@
 extend type Query {
-    role(id: ID @eq): Role @find
+    roles: [Role!]! @paginate
+    role (id: ID @eq): Role @find
 }
 
+extend type Mutation{
+    createRole(name: String!): Role! @create
+    updateRole(id: ID!, name: String!): Role! @update
+    deleteRole(id: ID!): Role @delete 
+}
 type Role {
     id: ID,
-    name: String,
+    name: String
 }
