@@ -1,32 +1,48 @@
-scalar Email
-
+# Query
 extend type Query {
     user(id: ID @eq): User @find 
     users(input: UserFilterInput): [User] @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\UserQuery@filterUser")
 }
 
+# Mutation
 extend type Mutation {
     upsert(input: UserInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@upsert")
-    login(email: String!, password: String): String! @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@loginUser")
+    login(input: UserLoginInput): LoginResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@loginUser")
+    forgetPassword(input: UserForgetPasswordInput): String @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@forgetPassword")
 }
 
 # Types 
 type User {
     id: ID,
-    email: Email,
+    email: String,
     name: String,
-    role: Role @belongsTo
+}
+
+type LoginResponse  {
+    status: String,
+    token: String,
+    user: User
 }
 
 # Inputs 
 input UserFilterInput @validator {
     id: ID,
-    email: Email,
-    name: String
+    email: String,
+    name: String,
 }
 
 input UserInput @validator {
-    email: Email,
+    email: String,
     name: String
 }
+
+input UserLoginInput @validator {
+    email: String,
+    password: String
+}
+
+input UserForgetPasswordInput @validator {
+    email: String
+}
+
 

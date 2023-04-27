@@ -15,13 +15,21 @@ final class UserMutation
         // TODO implement the resolver
     }
 
-    public function upsert($_,array $args)
-    {
-        return User::upsertInstance($args);
-    }
+
+    // Authentication Function
 
     public function loginUser($_, array $args)
     {
-        return User::login($args);
+        return (new User)->login($args['input']['email'],$args['input']['password']);
+    }
+
+    public function forgetPassword($_, array $args)
+    {
+        return (new User)->forgetPassword($args['input']['email']);
+    }
+
+    public function upsert($_,array $args)
+    {
+        return (new User)->upsertInstance($args);
     }
 }
