@@ -16,7 +16,8 @@ return new class extends Migration
         Schema::create('otps', function (Blueprint $table) {
             $table->id();
             $table->integer('otp');
-            $table->string('email');
+            $table->string('user_id');
+            $table->string('type');
             $table->string('verification_id');
             $table->timestamps();
         });
