@@ -1,0 +1,18 @@
+# Query
+extend type Mutation {
+    checkOtpByEmail(input: OtpInput): [Otp] @field(resolver: "App\\GraphQL\\Mutations\\OtpMutation@checkOtpByEmail")
+    checkOtpByUser(input: OtpInput): [Otp] @field(resolver: "App\\GraphQL\\Mutations\\OtpMutation@checkOtpByUserId")
+}
+
+#Types
+type Otp  {
+    status: String
+}
+
+#Inputs
+input OtpInput {
+    otp: Int,
+    email: String,
+    verificationID: String,
+    type: String
+}
