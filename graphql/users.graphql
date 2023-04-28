@@ -2,6 +2,7 @@
 extend type Query {
     user(id: ID @eq): User @find 
     users(input: UserFilterInput): [User] @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\UserQuery@filterUser")
+    me: User @auth
 }
 
 # Mutation
@@ -9,6 +10,9 @@ extend type Mutation {
     upsert(input: UserInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@upsert")
     login(input: UserLoginInput): LoginResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@loginUser")
     forgetPassword(input: UserForgetPasswordInput): String @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@forgetPassword")
+    resetPassword(input: UserResetPasswordInput): UserResetResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@resetPassword")
+    profile(input: UserProfileInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@profileEdit") @guard
+    userEmailRequestConirm(input: UserEmailRequestConfirmInput): User @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@confirmEmailRequest") @guard
 }
 
 # Types 
@@ -21,6 +25,11 @@ type User {
 type LoginResponse  {
     status: String,
     token: String,
+    user: User
+}
+
+type UserResetResponse {
+    status: String,
     user: User
 }
 
@@ -45,4 +54,19 @@ input UserForgetPasswordInput @validator {
     email: String
 }
 
+input UserResetPasswordInput @validator {
+    email: String,
+    verificationID: String,
+    password: String,
+    otp: String
+}
 
+input UserProfileInput @validator{
+    name: String,
+    phone: String,
+    avatar: Upload
+}
+
+input UserEmailRequestConfirmInput  {
+    email: String
+}

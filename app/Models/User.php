@@ -8,11 +8,12 @@ use App\Services\MailerService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Passport\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 use App\Models\Role;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -35,33 +36,19 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
 
-    /**
-     *  Access To User Account 
-     * 
-     *  @param string email
-     *  @param string password
-     * 
-     *  @return array
-    */
-
-    public static function login(string $email,string $password)
-    {        
+    public function login(string $email,string $password)
+    {       
         $user = User::where('email',$email)->first();
         $status = (password_verify($password,$user->password)) ? "Success" : "Fail";
 
         if ( $status == "Success") 
             return [
                 'status' => "Success",
-                'token' => $user->createToken('login',['regular'])->accessToken->token,
+                'token' => $user->createToken('login')->accessToken,
                 'user' => $user
             ];
         else 
@@ -71,24 +58,11 @@ class User extends Authenticatable
             ];
     }
 
-    /**
-     * Send Reset Password Mail User Password
-     * 
-     * @param string email
-     * 
-     * @return string
-    */
-
     public  function forgetPassword(string $email)
     {
-        //Get Relevant User
         $user = User::where('email',$email)->first();
+        $otp = Otp::generateOtp($user,'reset_password');
 
-        //Assign otp
-        $otp = Otp::assignOtpToEmail($email);
-
-      
-        //Send email
         $this->forgetPasswordMail([
             'name'  => $user->name,
             'to_email' => $user->email,
@@ -98,26 +72,14 @@ class User extends Authenticatable
         return $otp['verification_id'];
     }
 
-    /**
-     * Change User Password
-     * 
-     * @param string $email
-     * @param string $otp
-     * @param string $verification_id
-     * @param string $password
-     * 
-     * @return array
-     */
-
     public function resetPassword(string $email,string $otp,string $verification_id,string $password)
     {
-        // Get Relevant User With Otp
         $userOtp = Otp::where([
             'email' => $email,
             'otp'   => $otp,
+            'type'  => 'reset_password'
         ])->first();
 
-        // Check that verification id is correct
         if ( password_verify($verification_id,$userOtp->verification_id) ) {
             $user = User::where('email',$email)->first();
             $user->password = Hash::make($password);
@@ -131,9 +93,30 @@ class User extends Authenticatable
                 'status' => "Fail"
             ];
         }
-
     }
 
+    public function updateProfile(array $request)
+    {
+        $user = Auth::user();
+
+        if ( isset($request['name']) ) {
+            $user->name = $request['name'];
+            $user->save();
+        }
+
+        elseif ( isset($request['phone']) ) {
+            $user->phone = $request['phone'];
+            $user->save();
+        }
+
+        return Auth::user();
+    }
+
+    public function confirmEmailRequest($request)
+    {
+        Auth::user()->email = $request['email'];
+        Auth::user()->save();
+    }
 
     // Crud Function 
     public static function upsertInstance($request)
@@ -148,7 +131,6 @@ class User extends Authenticatable
 
 
     // Scopes
-
     public function scopeFilter($query,$request)
     {
         if ( isset($request["input"]['name']) ) {
