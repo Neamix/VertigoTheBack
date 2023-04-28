@@ -12,7 +12,6 @@ extend type Mutation {
     forgetPassword(input: UserForgetPasswordInput): String @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@forgetPassword")
     resetPassword(input: UserResetPasswordInput): UserResetResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@resetPassword")
     profile(input: UserProfileInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@profileEdit") @guard
-    userEmailRequestConirm(input: UserEmailRequestConfirmInput): User @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@confirmEmailRequest") @guard
 }
 
 # Types 
@@ -61,12 +60,8 @@ input UserResetPasswordInput @validator {
     otp: String
 }
 
-input UserProfileInput @validator{
+input UserProfileInput @validator {
     name: String,
     phone: String,
     avatar: Upload
-}
-
-input UserEmailRequestConfirmInput  {
-    email: String
 }
