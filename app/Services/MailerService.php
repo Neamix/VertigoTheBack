@@ -18,6 +18,16 @@ trait MailerService
         self::sendEmail($send);
     }
 
+    public function joinUsMail($data = [])
+    {
+        $send['to_email'] = $data['to_email'];
+        $send['view'] = 'email.Auth.joinUsEmail';
+        $send['token'] = $data['token'];
+        $send['subject'] = $data['company']." | Invitation mail";
+        $send['company'] = $data['company'];
+        self::sendEmail($send);
+    }
+
 
     static function sendEmail($data)
     {
