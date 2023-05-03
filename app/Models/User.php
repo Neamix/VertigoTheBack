@@ -119,13 +119,16 @@ class User extends Authenticatable
     }
 
     // Crud Function 
-    public static function upsertInstance($request)
+    public static function inviteMember($email,$company_id)
     {
-        return User::create([
-            'name'  => $request['input']['name'],
-            'email' => $request['input']['email'],
-            'role_id' => 1
+        JoinRequest::createRequest([
+            'email' => $email,
+            'company_id' => $company_id
         ]);
+        
+        return [
+            'status' => "Success"
+        ];
     }
 
 
@@ -144,5 +147,10 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class);
     }
 }
