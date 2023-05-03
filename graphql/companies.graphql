@@ -1,31 +1,27 @@
 # Queries
-
-extend type Queries {
+extend type Query {
     company(id: ID @eq):  Company @find
 }
 
 # Mutation
-
 extend type Mutation {
     registerCompany(input: CompanyRegisterInput): Company @field(resolver: "App/GraphQL/Mutations/Company/CompanyMutator.php")
 }
 
 
 # Types 
-
 type Company {
     id: ID,
     name: String,
-    zipCode: zipCode,
-    field: String,
-    startDate: Time,
-    endDate: Time,
-    AllowAnyTimeLogin: Boolen,
-    user: User
+    email: String,
+    country: String,
+    address: String,
+    status: String,
+    created_at: Time,
+    users: [User]
 }
 
 # Inputs 
-
 input CompanyRegisterInput {
     id: ID,
     name: String,
