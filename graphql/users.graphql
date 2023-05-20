@@ -1,6 +1,7 @@
 # Query
 extend type Query {
     user(id: ID @eq): User @find 
+    userWithEmail(email: String @eq): User @find
     users(input: UserFilterInput): [User] @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\UserQuery@filterUser")
     me: User @auth
 }
@@ -64,4 +65,13 @@ input UserProfileInput @validator {
     name: String,
     phone: String,
     avatar: Upload
+}
+
+input UserRegisterInput {
+    name: String,
+    email: String,
+    phone: String,
+    password: String,
+    paymentId: String,
+    type: Int,
 }
