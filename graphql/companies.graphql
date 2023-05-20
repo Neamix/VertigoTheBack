@@ -1,11 +1,12 @@
 # Queries
 extend type Query {
     company(id: ID @eq):  Company @find
+    companyWithEmail(email: String): Company @all
 }
 
 # Mutation
 extend type Mutation {
-    registerCompany(input: CompanyRegisterInput): Company @field(resolver: "App/GraphQL/Mutations/Company/CompanyMutator.php")
+    registerCompany(input: CompanyRegisterInput): RegisteredCompany @field(resolver: "App\\GraphQL\\Mutations\\CompanyMutator@register")
 }
 
 
@@ -16,17 +17,27 @@ type Company {
     email: String,
     country: String,
     address: String,
-    status: String,
-    created_at: Time,
-    users: [User]
+    active: Boolean,
+    created_at: DateTime,
+    users: User,
+    billing: Billing,
+    active: Boolean
+}
+
+type RegisteredCompany  {
+    company: Company,
+    user: User,
+    token: String
 }
 
 # Inputs 
-input CompanyRegisterInput {
+input CompanyRegisterInput @validator {
     id: ID,
     name: String,
-    zipCode: zipCode,
-    field: String,
-    startDate: Time,
-    endDate: Time,
+    email: String,
+    country: String,
+    address: String,
+    seats: Int,
+    user: UserRegisterInput,
+    billing: BillingInput,
 }
