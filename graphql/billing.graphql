@@ -1,0 +1,13 @@
+type Billing {
+    id: String,
+    name: String,
+    email: String,
+    phone: String,
+}
+
+input BillingInput {
+    id: String,
+    name: String,
+    email: String,
+    phone: String,
+}
