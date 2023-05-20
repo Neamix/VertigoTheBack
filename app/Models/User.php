@@ -83,7 +83,6 @@ class User extends Authenticatable
         if ( password_verify($verification_id,$userOtp->verification_id) ) {
             $user = User::where('email',$email)->first();
             $user->password = Hash::make($password);
-
             return [
                 'status' => "Success",
                 'user' => $user
@@ -131,7 +130,32 @@ class User extends Authenticatable
         ];
     }
 
+    static function createInstance(array $request)
+    {
+        $user = self::create([
+            'name'  => $request['name'],
+            'email' => $request['email'],
+            'password' => Hash::make($request['password']),
+            'type'  => $request['type'] ?? 1,
+            'phone' => $request['phone'] ?? null
+        ]);
 
+        return $user;
+    }
+
+
+    static function generateRootUser(array $request)
+    {
+        $rootUser = self::create([
+            'name'  => $request['name'],
+            'email' => $request['email'],
+            'password' => Hash::make($request['password']),
+            'type'  => 2,
+            'phone' => $request['phone'] ?? null
+        ]);
+        
+        return $rootUser;
+    }
 
     // Scopes
     public function scopeFilter($query,$request)
