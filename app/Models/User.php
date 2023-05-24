@@ -144,7 +144,7 @@ class User extends Authenticatable
     }
 
 
-    static function generateRootUser(array $request)
+    static function generateRootUser(array $request,$company_id)
     {
         $rootUser = self::create([
             'name'  => $request['name'],
@@ -154,6 +154,8 @@ class User extends Authenticatable
             'phone' => $request['phone'] ?? null
         ]);
         
+        $rootUser->companies()->attach($company_id);
+
         return $rootUser;
     }
 
