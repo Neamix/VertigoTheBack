@@ -27,7 +27,9 @@ type Company {
 type RegisteredCompany  {
     company: Company,
     user: User,
-    token: String
+    token: String,
+    status: String,
+    message: String
 }
 
 # Inputs 
