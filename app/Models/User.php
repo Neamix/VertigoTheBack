@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Events\UserStatusEvent;
 use App\Services\MailerService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -14,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -40,29 +42,43 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    /*** Authunticate new user */
     public function login(string $email,string $password)
     {       
+        // Get Relevent User
         $user = User::where('email',$email)->first();
         $status = (password_verify($password,$user->password)) ? "Success" : "Fail";
 
-        if ( $status == "Success") 
-            return [
-                'status' => "Success",
-                'token' => $user->createToken('login')->accessToken,
-                'user' => $user
-            ];
-        else 
+        // Check if credentions is wrong
+        if ( $status != "Success") {
             return [
                 'status' => "Fail",
                 'user' => null
             ];
+        }
+
+        // Make Firt Company Is The Active Company In Case User Doesn't Have One
+        if ( ! $user->active_company_id ) {
+            $user->active_company_id = $user->companies->first()->id;
+            $user->save();
+        }
+
+        // Return Success Response
+        return [
+            'status' => "Success",
+            'token' => $user->createToken('login')->accessToken,
+            'user' => $user
+        ];
     }
 
+    /*** Send forget email **/
     public  function forgetPassword(string $email)
     {
+        // Get Relevent User
         $user = User::where('email',$email)->first();
-        $otp = Otp::generateOtp($user,'reset_password');
+        $otp = Otp::generateOtp($user,'password_reset');
 
+        // Send Forget Email
         $this->forgetPasswordMail([
             'name'  => $user->name,
             'to_email' => $user->email,
@@ -72,20 +88,40 @@ class User extends Authenticatable
         return $otp['verification_id'];
     }
 
+    /*** Check Otp and send status */
+    static function checkOtp(string $otp,string $email) 
+    {
+        // Get Relevent User & otp
+        $user = User::where('email',$email)->first();
+        $otp  = $user->otp->where('otp',$otp)->first();
+
+        // Send Status
+        if ( $otp ) {
+            return ['status' => 'Success'];
+        } else {
+            return ['status' => 'Failed'];
+        }
+    }
+
+    /*** Add New Password */
     public function resetPassword(string $email,string $otp,string $verification_id,string $password)
     {
+        $user = User::where('email',$email)->first();
+
+        // Get Otp
         $userOtp = Otp::where([
-            'email' => $email,
+            'user_id' => $user->id,
             'otp'   => $otp,
-            'type'  => 'reset_password'
+            'type'  => 'password_reset'
         ])->first();
 
+        // Check Otp & verification id is right or not
         if ( password_verify($verification_id,$userOtp->verification_id) ) {
-            $user = User::where('email',$email)->first();
             $user->password = Hash::make($password);
+            $user->save();
             return [
                 'status' => "Success",
-                'user' => $user
+                'token'  => $this->login($email,$password)['token']
             ];
         } else {
             return [
@@ -94,6 +130,7 @@ class User extends Authenticatable
         }
     }
 
+    /** Update User Profile */
     public function updateProfile(array $request)
     {
         $user = Auth::user();
@@ -111,22 +148,96 @@ class User extends Authenticatable
         return Auth::user();
     }
 
+    /**
+     * @deprecated Feature Has Been Waved 
+    */
     public function confirmEmailRequest($request)
     {
         Auth::user()->email = $request['email'];
         Auth::user()->save();
     }
 
-    // Crud Function 
-    public static function inviteMember($email,$company_id)
+    /*** Change User Status  */
+    public function changeStatus($request) 
     {
-        JoinRequest::createRequest([
-            'email' => $email,
-            'company_id' => $company_id
-        ]);
-        
+        // Change Status ID 
+        $this->status_id = $request['status_id'];
+        $this->save();
+
+        // Send Pusher Event
+        event(new UserStatusEvent([
+            'user_id' => Auth::user()->id,
+            'name'    => Auth::user()->name,
+        ]));
+        return $this;
+    }
+
+    /*** Render Invitation New Member */
+    public static function renderInvitation($data)
+    {
+        $user = self::where('email',$data['email'])->first();
+
+        if ( ! $user ) {
+            $user = self::create([
+                'email' => $data['email']
+            ]);
+        }
+
+        if ( $user->password ) {
+            JoinUsEmail::where('email',)
+        }
+
         return [
-            'status' => "Success"
+            'type' => $user->password  ? 'existuser' : 'newuser'
+        ];
+    }
+
+    /*** Accept Invitation */
+    public function acceptInvitation($data)
+    {
+        $joinRequest = JoinUsEmail::where('email',$data['email'])->first();
+
+        // Attach User To The New Company
+        $user = self::where('email',$data['email'])->first();
+        $user->companies()->attach($joinRequest['company_id']);
+
+        // Terminate Join Request
+        $joinRequest->delete();
+
+        // In Case No Password Then This User Is New
+        if ( ! $user->password ) {
+            $user->password = $data['password'] ?? '';
+            $user->save();
+        }
+
+        return [
+            'status' => 'Success',
+            'message' => 'You have join new workspace'
+        ];
+    }
+
+    /*** Create InvitationRequest */
+    public function inviteRequest($data) 
+    {
+        // Generate Token
+        $token = rand(10000,99999999);
+
+        // Save Join Request
+        JoinRequest::create([
+            'email' => $data['email'],
+            'token' => bcrypt($token),
+            'company_id' => Auth::user()->active_company_id,
+        ]);
+
+        // Send Invitation Request
+        $this->joinUsMail([
+            'to_email' => $data['email'],
+            'company'  => Company::find(Auth::user()->active_company_id)->name,
+            'token'    => url("/accept/invitation?token=$token&email=".$data['email'])
+        ]);
+
+        return [
+            'email' => $data['email']
         ];
     }
 
@@ -151,7 +262,8 @@ class User extends Authenticatable
             'email' => $request['email'],
             'password' => Hash::make($request['password']),
             'type'  => 2,
-            'phone' => $request['phone'] ?? null
+            'phone' => $request['phone'] ?? null,
+            'active_company_id' => $company_id
         ]);
         
         $rootUser->companies()->attach($company_id);
@@ -166,6 +278,8 @@ class User extends Authenticatable
             $query->where('name','like','%'.$request["input"]['name'].'%');
         }
 
+        $query->where('active_company_id',Auth::user()->active_company_id);
+        
         return $query;
     }
 
@@ -178,5 +292,20 @@ class User extends Authenticatable
     public function companies()
     {
         return $this->belongsToMany(Company::class);
+    }
+
+    public function otp()
+    {
+        return $this->hasOne(Otp::class);
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(Status::class);
+    }
+
+    public function activeCompany()
+    {
+        return $this->belongsTo(Company::class,'active_company_id');
     }
 }

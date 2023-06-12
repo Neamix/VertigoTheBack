@@ -17,6 +17,11 @@ final class UserQuery
 
     public function filterUser($_,array $args)
     {
-        return User::filter($args)->paginate();
+        return User::filter($args)->paginate($args['first']);
+    }
+
+    public function checkOtp($_,array $args) 
+    {
+        return User::checkOtp($args['input']['otp'],$args['input']['email']);
     }
 }

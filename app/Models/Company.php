@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\MailerService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,9 +47,9 @@ class Company extends Model
 
         /*** Try to subscripe */
         try {
-            $subscripe = $company
+            $company
             ->newSubscription('bronze_plan',['price_1N43m6KV5l49k0XZkSKy9RHQ'])
-            ->quantity(5)
+            ->quantity($request['seats'])
             ->create($request['billing']['id'], [
                 'name'  => ($request['billing']['name'] == null) ? $request['billing']['email'] : $request['user']['name'] ,
                 'email' => ($request['billing']['email'] == null) ? $request['billing']['email'] : $request['user']['email'],
@@ -63,7 +64,7 @@ class Company extends Model
                 'seats'     => $request['seats'],
                 'invoiceID' => $company->last_invoice_id,
                 'company'   => $company->id,
-                'value_per_seat'      => 20,
+                'value_per_seat' => 20,
                 'credit_pm_last_four' => $company->pm_last_four,
                 'inovice_number' => $company->invoice_number,
                 'credit_pm_type' => $company->pm_type
@@ -88,11 +89,35 @@ class Company extends Model
         }
     }
 
-    // Invoices 
+    /**
+     * Download Invoice of given id 
+     * 
+     * @return Rendable
+    */
+
     public function generateInvoice($invoiceID)
     {
         /*** Generate strip invoice */
         return $this->downloadInvoice($invoiceID);
+    }
+
+    /**
+     * Add new due date for company after paying subscription 
+     * 
+     * @return void
+    */
+
+    public function refreshDueDate()
+    {
+        /*** Get next due date (fixed 30 days ) and save it in database */
+        $company_next_due_date = Carbon::now()->addDays(30)->toDateTimeString();
+        $this->next_due_date  = date('Y-m-d',strtotime($company_next_due_date));
+        $this->save();
+    }
+
+    public function cancelSubscription()
+    {
+
     }
 
     // Attributes

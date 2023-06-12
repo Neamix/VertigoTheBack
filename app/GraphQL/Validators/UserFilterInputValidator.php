@@ -14,9 +14,7 @@ final class UserFilterInputValidator extends Validator
     public function rules(): array
     {
         return [
-           'name' => ['required',function($attribute,$value,$fail){
-
-            }]
+           
         ];
     }
 }

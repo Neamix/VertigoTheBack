@@ -38,29 +38,43 @@ class Otp extends Model
         ];
     }
 
-    public function checkOtpByEmail(int $otp,string $verificationID,string $type,string $email)
+    static function checkOtpByEmail(string $otp,string $verificationID,string $type,string $email)
     {
-        $user   = User::where('email',$email)->first();
+        $user = User::where('email',$email)->first();
 
-        return [
-            'status' =>  $this->checkOtpByUserId($otp,$verificationID,$type,$user->id)
-        ];
+        if ( $user ) {
+            return [
+                'status' =>  (new self)->checkOtpByUserId($otp,$verificationID,$type,$user->id)
+            ];
+        } else {
+            return [
+                'status' =>  "Failed"
+            ];
+        }
     }
 
-    public function checkOtpByUserId(int $otp,string $verificationID,string $type,int $user_id)
+    public function checkOtpByUserId(string $otp_code,string $verificationID,string $type,int $user_id)
     {
         $currentDateTime = Carbon::now()->format('Y-m-d H:m');
         $lastAllowedTime = Carbon::now()->subMinutes(100)->format('Y-m-d H:m');
 
         $otp = Otp::where([
-            'verification_id' => $verificationID,
-            'otp'  => $otp,
+            'otp'  => $otp_code,
             'type' => $type,
             'user_id' => $user_id,
-        ])->whereBetween('created_at',[$currentDateTime,$lastAllowedTime])->count();
+        ])->first();
+
+        if ( $otp ) {
+            // Check Verification id
+            if ( password_verify($verificationID,$otp->verification_id) ) {
+                return [
+                    'status' => "Success"
+                ];
+            }
+        }
 
         return [
-            'status' => $otp ? "Success" : "Fail"
+            'status' => "Fail"
         ];
     }
 

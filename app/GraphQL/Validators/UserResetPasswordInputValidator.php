@@ -21,14 +21,8 @@ final class UserResetPasswordInputValidator extends Validator
             'password' => ['required'],
             'otp' => ['required'],
             'verificationID' => ['required',function($attribute,$value,$fail) {
-                $user = User::where('email',$this->arg('email'))->first();
-
-                if ( $user) {
-                    if ( Otp::checkOtp($this->arg('otp'),$value,'password_reset',$user->id) ) {
-                        return $fail(__('localization.this_otp_is_expired_or_not_exist'));
-                    }
-                } else {
-                    return $fail(__('localization.this_email_not_exist'));
+                if ( ! Otp::checkOtpByEmail($this->arg('otp'),$value,'password_reset',$this->arg('email')) ) {
+                    return $fail(__('localization.this_otp_is_expired_or_not_exist'));
                 }
              
             }]

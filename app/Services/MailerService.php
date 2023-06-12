@@ -21,7 +21,7 @@ trait MailerService
     public function joinUsMail($data = [])
     {
         $send['to_email'] = $data['to_email'];
-        $send['view'] = 'email.Auth.joinUsEmail';
+        $send['view'] = 'emails.Auth.joinUsEmail';
         $send['token'] = $data['token'];
         $send['subject'] = $data['company']." | Invitation mail";
         $send['company'] = $data['company'];

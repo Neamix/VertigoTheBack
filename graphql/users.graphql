@@ -3,24 +3,28 @@ extend type Query {
     user(id: ID @eq): User @find 
     userWithEmail(email: String @eq): User @find
     users(input: UserFilterInput): [User] @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\UserQuery@filterUser")
+    checkOtp(input: UserOtp): UserResetResponse @field(resolver:"App\\GraphQL\\Queries\\UserQuery@checkOtp")
     me: User @auth
 }
 
 # Mutation
 extend type Mutation {
-    upsert(input: UserInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@upsert")
     login(input: UserLoginInput): LoginResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@loginUser")
     forgetPassword(input: UserForgetPasswordInput): String @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@forgetPassword")
-    resetPassword(input: UserResetPasswordInput): UserResetResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@resetPassword")
+    resetPassword(input: UserResetPasswordInput): LoginResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@resetPassword")
     profile(input: UserProfileInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@profileEdit") @guard
+    changeStatus(status_id: Int): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@changeStatus") @guard
+    inviteMember(email: String): User @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@inviteMember") @guard
+    changeEmail(email: String): User @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@changeEmail") @guard
 }
 
 # Types 
 type User {
     id: ID,
     email: String,
-    name: String,
-    token: String
+    name:  String,
+    token: String,
+    status: Status
 }
 
 type LoginResponse  {
@@ -31,7 +35,12 @@ type LoginResponse  {
 
 type UserResetResponse {
     status: String,
-    user: User
+    message: String
+}
+
+type Status {
+    id: ID,
+    name: String
 }
 
 # Inputs 
@@ -59,6 +68,11 @@ input UserResetPasswordInput @validator {
     email: String,
     verificationID: String,
     password: String,
+    otp: String
+}
+
+input UserOtp {
+    email: String,
     otp: String
 }
 

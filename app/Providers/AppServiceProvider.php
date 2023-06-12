@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Test;
 use App\Models\Company;
 use App\Models\User;
 use Illuminate\Support\ServiceProvider;
@@ -16,7 +17,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(test::class,function ($text) {
+          
+            return Test::foo($text);
+        });
     }
 
     /**
