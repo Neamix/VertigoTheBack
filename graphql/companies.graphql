@@ -21,7 +21,8 @@ type Company {
     created_at: DateTime,
     users: User,
     billing: Billing,
-    active: Boolean
+    active: Boolean,
+    response: Response
 }
 
 type RegisteredCompany  {
