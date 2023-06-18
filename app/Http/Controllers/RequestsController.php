@@ -12,6 +12,6 @@ class RequestsController extends Controller
     public function handleInvitationRequest(Request $request)
     {
         $typeOfUser = User::renderInvitation($request->all());
-        return ($typeOfUser['type'] == 'newuser') ? Redirect::to(env('FRONT_END_URL').'/verify?email='.$request->email) : Redirect::to(env('FRONT_END_URL'));
+        return ($typeOfUser['type'] == 'newuser') ? Redirect::to(env('FRONT_END_URL').'/verify?email='.$request->email.'&token='.$request->token) : Redirect::to(env('FRONT_END_URL'));
     }
 }

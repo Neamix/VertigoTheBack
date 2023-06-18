@@ -35,7 +35,7 @@ final class UserMutation
 
     public function inviteMember($_,array $args)
     {
-        return $this->user->inviteRequest($args);
+        return $this->user->inviteRequest($args['input']);
     }
 
     public  function profileEdit($_,array $args)
@@ -52,5 +52,11 @@ final class UserMutation
     public  function changeStatus($_,array $args)
     {
         return Auth::user()->changeStatus($args);
+    }
+
+    // Accept Invitation 
+    public function acceptInvitation($_,array $args)
+    {
+        return $this->user->acceptInvitation($args['input']);
     }
 }

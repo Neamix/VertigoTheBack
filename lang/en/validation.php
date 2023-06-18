@@ -151,6 +151,14 @@ return [
     'ulid' => 'The :attribute must be a valid ULID.',
     'uuid' => 'The :attribute must be a valid UUID.',
 
+    /*** Join Requests */
+    'you_need_to_add_password' => "You need to add password",
+    'this_email_address_already_has_pending_invitation' => "This email address already has pending invitaion",
+    'this_email_address_already_joined_your_workspace'  => "This email address already joined your workspace",
+
+    /*** Errors */
+    'error_occure_code_v100' => "Error Occure Code V100",
+
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines

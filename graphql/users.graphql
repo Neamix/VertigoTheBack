@@ -14,8 +14,9 @@ extend type Mutation {
     resetPassword(input: UserResetPasswordInput): LoginResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@resetPassword")
     profile(input: UserProfileInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@profileEdit") @guard
     changeStatus(status_id: Int): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@changeStatus") @guard
-    inviteMember(email: String): User @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@inviteMember") @guard
+    inviteMember(input: inviteMemberInput): User @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@inviteMember") @guard
     changeEmail(email: String): User @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@changeEmail") @guard
+    acceptInvitation(input: UserInvitationInput): LoginResponse @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@acceptInvitation")
 }
 
 # Types 
@@ -24,7 +25,8 @@ type User {
     email: String,
     name:  String,
     token: String,
-    status: Status
+    status: Status @belongsTo,
+    active_company_id: ID
 }
 
 type LoginResponse  {
@@ -40,9 +42,13 @@ type UserResetResponse {
 
 type Status {
     id: ID,
-    name: String
+    name: String,
 }
 
+type Response {
+    status: String,
+    message: String
+}
 # Inputs 
 input UserFilterInput @validator {
     id: ID,
@@ -89,4 +95,15 @@ input UserRegisterInput {
     password: String,
     paymentId: String,
     type: Int,
+}
+
+input inviteMemberInput @validator {
+    email: String
+}
+
+input UserInvitationInput @validator {
+    email: String,
+    token: String,
+    password: String,
+    name: String
 }

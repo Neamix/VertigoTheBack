@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\JoinRequest;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AcceptInvitationMiddleware
 {
@@ -24,10 +25,10 @@ class AcceptInvitationMiddleware
             abort(404);
         }
 
-        $verifiedToken = password_verify($request->token,$requestInstance->token);
+        $verifiedToken = Hash::check($request->token,$requestInstance->token);
         $companyExist  = Company::where(['id' => $requestInstance->company_id])->first();
 
-        if ( ! $companyExist) {
+        if ( ! $companyExist || ! $verifiedToken) {
             abort(404);
         }
 

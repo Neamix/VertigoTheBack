@@ -19,4 +19,15 @@ class JoinRequest extends Model
             'company_id' => $request['company_id'],
         ]);
     }
+
+    // Relation
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

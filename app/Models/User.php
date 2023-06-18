@@ -16,6 +16,7 @@ use Illuminate\Validation\ValidationException;
 use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
@@ -163,12 +164,13 @@ class User extends Authenticatable
         // Change Status ID 
         $this->status_id = $request['status_id'];
         $this->save();
-
+        
         // Send Pusher Event
         event(new UserStatusEvent([
-            'user_id' => Auth::user()->id,
-            'name'    => Auth::user()->name,
+            'user_id' => $this->id,
+            'status_id'    => $this->status_id,
         ]));
+
         return $this;
     }
 
@@ -184,7 +186,7 @@ class User extends Authenticatable
         }
 
         if ( $user->password ) {
-            JoinUsEmail::where('email',)
+            $user->acceptInvitation($data);
         }
 
         return [
@@ -195,25 +197,34 @@ class User extends Authenticatable
     /*** Accept Invitation */
     public function acceptInvitation($data)
     {
-        $joinRequest = JoinUsEmail::where('email',$data['email'])->first();
+        $joinRequest = JoinRequest::where('email',$data['email'])->first();
+
+        // Get User Under Action
+        $user = self::where('email',$data['email'])->first();
 
         // Attach User To The New Company
-        $user = self::where('email',$data['email'])->first();
         $user->companies()->attach($joinRequest['company_id']);
 
+        // Get The Requested Company
+        $company = $joinRequest->company()->first(['name','id']);
+        
         // Terminate Join Request
         $joinRequest->delete();
 
         // In Case No Password Then This User Is New
         if ( ! $user->password ) {
-            $user->password = $data['password'] ?? '';
-            $user->save();
+            $user->password = Hash::make($data['password']);
+            $user->name = $data['name'] ?? "Vertigo User";
+            $user->status_id = 1;
         }
 
-        return [
-            'status' => 'Success',
-            'message' => 'You have join new workspace'
-        ];
+        $user->active_company_id = $company->id;
+        $user->save();
+
+        // Authunticate User
+        if ( isset($data["password"]) ) {
+            return  $this->login($user->email,$data["password"]);
+        }
     }
 
     /*** Create InvitationRequest */
@@ -223,7 +234,10 @@ class User extends Authenticatable
         $token = rand(10000,99999999);
 
         // Save Join Request
-        JoinRequest::create([
+        JoinRequest::updateOrCreate([
+            'email' => $data['email']
+        ],
+        [
             'email' => $data['email'],
             'token' => bcrypt($token),
             'company_id' => Auth::user()->active_company_id,
@@ -277,7 +291,7 @@ class User extends Authenticatable
         if ( isset($request["input"]['name']) ) {
             $query->where('name','like','%'.$request["input"]['name'].'%');
         }
-
+        
         $query->where('active_company_id',Auth::user()->active_company_id);
         
         return $query;
@@ -307,5 +321,10 @@ class User extends Authenticatable
     public function activeCompany()
     {
         return $this->belongsTo(Company::class,'active_company_id');
+    }
+
+    public function session()
+    {
+        return $this->hasMany(Session::class);
     }
 }
