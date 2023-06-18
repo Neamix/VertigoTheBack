@@ -25,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropColumns('next_due_date');
+        Schema::table('companies', function (Blueprint $table) {
+            $table->dropColumn('next_due_date');
+        });
     }
 };
