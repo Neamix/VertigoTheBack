@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Services\PaymentService;
-use Illuminate\Auth\Events\Login;
+use App\Http\Services\PusherService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Laravel\Cashier\Events\WebhookReceived;
 use Laravel\Cashier\Http\Controllers\WebhookController as CashierController;
 
 class WebhookController extends CashierController
@@ -21,8 +19,8 @@ class WebhookController extends CashierController
         $paymentService->getReleventCompany()->cancelSubscription();
     }
 
-    public function handlePusherEvent(Request $request) {
-        Log::info($request);
+    public function handlePusherEvent(PusherService $pusherService) {
+        $pusherService->sessions();
     }
 
 }
