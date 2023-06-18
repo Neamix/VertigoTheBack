@@ -11,6 +11,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Auth;
 
 class UserStatusEvent implements ShouldBroadcastNow
 {
@@ -26,7 +27,7 @@ class UserStatusEvent implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('my-channel'),
+            new PresenceChannel('company.'.Auth::user()->active_company_id),
         ];
     }
   
