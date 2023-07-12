@@ -70,4 +70,10 @@ final class UserMutation
     {
         return Auth::user()->switchCompany($args);
     }
+
+    // Toggle Suspended User 
+    public function toggleUserSuspended($_,array $args)
+    {
+        return Auth::user()->toggleUserSuspended($args['user_id']);
+    }
 }

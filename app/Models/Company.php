@@ -45,6 +45,10 @@ class Company extends Model
         $rootUser = User::generateRootUser($request['user'],$company->id);
         $token =  $rootUser->login($rootUser->email, $request['user']['password'])['token'];
 
+        /*** Attach Owner To Company */
+        $company->user_id = $rootUser->id;
+        $company->save();
+        
         /*** Try to subscripe */
         try {
             $company
@@ -120,6 +124,44 @@ class Company extends Model
 
     }
 
+    /*** Get Total Hours Of Agents During This Year */
+    public function companyHoursReport() 
+    {
+        $company_total_hours = Company::find(1)->sessions()->get();
+
+        $total_hours = $company_total_hours->groupby(function ($session) {
+            return Carbon::parse($session->created_at)->format('m');
+        });
+
+        $total_hours_report = $company_total_hours->groupby(function ($session) {
+            return Carbon::parse($session->created_at)->format('m');
+        })->mapWithKeys(function ($month_report) {
+            return ['time' => $month_report->sum('total_session_time')];
+        });
+
+        $active_hours_report = $company_total_hours->where('status_id',ACTIVE)->groupby(function ($session) {
+            return Carbon::parse($session->created_at)->format('m');
+        })->map(function ($month_report) {
+            return $month_report->sum('total_session_time');
+        })->all();
+
+        $idle_hours_report = $company_total_hours->where('status_id',IDLE)->groupby(function ($session) {
+            return Carbon::parse($session->created_at)->format('m');
+        })->map(function ($month_report) {
+            return $month_report->sum('total_session_time');
+        })->all();
+
+        $meeting_hours_report = $company_total_hours->where('status_id',MEETING)->groupby(function ($session) {
+            return Carbon::parse($session->created_at)->format('m');
+        })->map(function ($month_report) {
+            return $month_report->sum('total_session_time');
+        })->all();
+
+        return [
+            'time' => 100,
+        ];
+    }
+
     // Attributes
     public function getLastInvoiceAttribute()
     {
@@ -140,5 +182,10 @@ class Company extends Model
     public function users()
     {
         return $this->belongsToMany(User::class);
+    }
+
+    public function sessions()
+    {
+        return $this->hasMany(Session::class);
     }
 }

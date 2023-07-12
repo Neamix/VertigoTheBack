@@ -1,0 +1,15 @@
+extend type Query {
+    sessions:  [Session] @field(resolver: "App\\GraphQL\\Queries\\SessionQuery@getSessions") @authorized
+}
+
+type Session {
+    company: Company @belongsTo,
+    user: User @belongsTo,
+    total_session_time: String,
+    status_id: ID,
+    status: Status @belongsTo,
+    start_date: DateTime,
+    end_date: DateTime,
+    created_month: String
+}
+

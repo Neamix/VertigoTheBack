@@ -3,25 +3,32 @@
 namespace App\GraphQL\Queries;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 final class UserQuery
 {
-    /**
-     * @param  null  $_
-     * @param  array{}  $args
-     */
-    public function __invoke($_, array $args)
+    protected $user;
+
+    public function __construct(User $user)
     {
-        // TODO implement the resolver
+        $this->user = $user;
     }
 
+    /*** Filter Users In WorkSpace */
     public function filterUser($_,array $args)
     {
         return User::filter($args)->paginate($args['first']);
     }
 
+    /*** Check Oto */
     public function checkOtp($_,array $args) 
     {
         return User::checkOtp($args['input']['otp'],$args['input']['email']);
+    }
+
+    /*** Exporting Monitoring Sheet  */
+    public function exportMonitoringSheet($_,array $args)
+    {
+        return  $this->user->exportMonitoringSheet($args);
     }
 }

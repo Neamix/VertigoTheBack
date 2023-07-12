@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\AcceptInvitationMiddleware;
+use App\Http\Middleware\AuthorizedMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -64,6 +65,7 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'accept.invitation' => AcceptInvitationMiddleware::class
+        'accept.invitation' => AcceptInvitationMiddleware::class,
+        'Authorized' => AuthorizedMiddleware::class
     ];
 }

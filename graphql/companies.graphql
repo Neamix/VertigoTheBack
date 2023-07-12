@@ -2,6 +2,7 @@
 extend type Query {
     company(id: ID @eq):  Company @find
     companyWithEmail(email: String): Company @all
+    dashboardHoursReports: [Company]  @field(resolver: "App\\GraphQL\\Queries\\CompanyQuery@companyHours")
 }
 
 # Mutation
@@ -22,7 +23,14 @@ type Company {
     users: User,
     billing: Billing,
     active: Boolean,
-    response: Response
+    response: Response,
+    time: String
+    pivot: CompanyUserPivot,
+}
+
+type CompanyUserPivot {
+    company_id: ID,
+    is_suspend: Int
 }
 
 type RegisteredCompany  {
@@ -30,7 +38,15 @@ type RegisteredCompany  {
     user: User,
     token: String,
     status: String,
-    message: String
+    message: String,
+}
+
+type ReportHours {
+    time: String
+}
+
+type ReportHoursMonth {
+    total_hours: String
 }
 
 # Inputs 

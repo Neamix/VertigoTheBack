@@ -1,10 +1,11 @@
 # Query
 extend type Query {
-    user(id: ID @eq): User @find 
+    user(id: ID @eq): User @find  @test
     userWithEmail(email: String @eq): User @find
-    users(input: UserFilterInput): [User] @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\UserQuery@filterUser")
+    users(input: UserFilterInput): [User] @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\UserQuery@filterUser") @authorized
     checkOtp(input: UserOtp): UserResetResponse @field(resolver:"App\\GraphQL\\Queries\\UserQuery@checkOtp")
     me: User @auth
+    exportMonitoringSheet(input: ExportingUser): ExportResponse @field(resolver: "App\\GraphQL\\Queries\\UserQuery@exportMonitoringSheet")
 }
 
 # Mutation
@@ -12,21 +13,25 @@ extend type Mutation {
     login(input: UserLoginInput): LoginResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@loginUser")
     forgetPassword(input: UserForgetPasswordInput): String @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@forgetPassword")
     resetPassword(input: UserResetPasswordInput): LoginResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@resetPassword")
+    acceptInvitation(input: UserInvitationInput): LoginResponse @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@acceptInvitation")
     profile(input: UserProfileInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@profileEdit") @guard
     changeStatus(status_id: Int): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@changeStatus") @guard
     inviteMember(input: inviteMemberInput): User @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@inviteMember") @guard
-    changeEmail(email: String): User @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@changeEmail") @guard
-    acceptInvitation(input: UserInvitationInput): LoginResponse @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@acceptInvitation")
+    switchCompany(companyid: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@switchCompany") @guard @validator
+    toggleUserSuspended(user_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@toggleUserSuspended") @guard @validator @can(ability: "suspendUser",model:"App\\Models\\User")
 }
 
 # Types 
-type User {
+type User @authorized{
     id: ID,
     email: String,
     name:  String,
     token: String,
     status: Status @belongsTo,
-    active_company_id: ID
+    active_company_id: ID,
+    accessable_companies: [Company],
+    is_suspend: Boolean,
+    is_root: Boolean 
 }
 
 type LoginResponse  {
@@ -47,13 +52,25 @@ type Status {
 
 type Response {
     status: String,
-    message: String
+    message: String,
+    user: User
 }
+
+type SwitchCompany {
+    company: Company,
+    users: User
+}
+
+type ExportResponse {
+    path: String
+}
+
 # Inputs 
 input UserFilterInput @validator {
     id: ID,
     email: String,
     name: String,
+    page: Int
 }
 
 input UserInput @validator {
@@ -106,4 +123,9 @@ input UserInvitationInput @validator {
     token: String,
     password: String,
     name: String
+}
+
+input ExportingUser {
+    filters: UserFilterInput,
+    duration: Int
 }

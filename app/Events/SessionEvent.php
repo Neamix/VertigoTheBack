@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\User;
+use App\Models\Session;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -12,29 +12,38 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
-class UserStatusEvent implements ShouldBroadcastNow
+class SessionEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $user;
-  
-    public function __construct(array $user)
+    /**
+     * Create a new event instance.
+     *
+     * @return void
+     */
+
+    protected $session;
+
+    public function __construct(array $session)
     {
-        $this->user = $user;
+        $this->session = $session;
     }
-  
+
+    /**
+     * Get the channels the event should broadcast on.
+     *
+     * @return \Illuminate\Broadcasting\Channel|array
+     */
     public function broadcastOn(): array
     {
-        Log::info(Auth::user());
         return [
-            new PresenceChannel('company.'.Auth::user()->active_company_id),
+            new PresenceChannel('company-session-'.$this->session['company_id'])
         ];
     }
-  
+
     public function broadcastAs()
     {
-        return 'status';
+        return 'session';
     }
 }

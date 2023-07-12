@@ -6,3 +6,4 @@ scalar Upload @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Upload
 #import otp.graphql
 #import billing.graphql
 #import status.graphql
+#import sessions.graphql

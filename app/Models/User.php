@@ -4,7 +4,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Events\SessionEvent;
 use App\Events\UserStatusEvent;
+use App\Exports\UserMonitoringSheet;
 use App\Services\MailerService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -17,6 +19,7 @@ use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class User extends Authenticatable
 {
@@ -164,7 +167,13 @@ class User extends Authenticatable
         // Change Status ID 
         $this->status_id = $request['status_id'];
         $this->save();
+
+        // Close Current Session
+        Auth::user()->terminateSession(Auth::user()->active_company_id);
         
+        // Open New Session
+        Auth::user()->openSession(Auth::user()->active_company_id);
+
         // Send Pusher Event
         event(new UserStatusEvent([
             'user_id' => $this->id,
@@ -255,6 +264,7 @@ class User extends Authenticatable
         ];
     }
 
+    /*** Create Instance */
     static function createInstance(array $request)
     {
         $user = self::create([
@@ -268,7 +278,20 @@ class User extends Authenticatable
         return $user;
     }
 
+    /*** Switch Active Company */
+    public function switchCompany(array $request)
+    {
+        // Switch Company In DB
+        $this->active_company_id = $request['companyid'];
+        $this->save();
 
+        return [
+            'status' => 'success',
+            'user'   => Auth::user()
+        ];
+    }
+
+    /*** Generate Root User */
     static function generateRootUser(array $request,$company_id)
     {
         $rootUser = self::create([
@@ -279,10 +302,116 @@ class User extends Authenticatable
             'phone' => $request['phone'] ?? null,
             'active_company_id' => $company_id
         ]);
-        
+
         $rootUser->companies()->attach($company_id);
 
         return $rootUser;
+    }
+
+    /*** Toggle Suspend User */
+    public function toggleUserSuspended($user_id) {
+        // Get User Under Action
+        $user = User::where([
+            'id' => $user_id
+        ])->first();
+        
+        // Get User Status
+        $is_suspended = $user->companies()->where('company_id',$this->active_company_id)->first()->is_suspend;
+
+        // Reverse Status
+        $user->companies()->updateExistingPivot($this->active_company_id,[
+           'is_suspend' => ! $is_suspended
+        ]);
+    
+        return [
+            'status'  => "Success",
+        ];
+    }
+
+    /*** Check If User Suspended Or Not */
+    public function isSuspended() {
+        return $this->companies()->where('company_id',$this->active_company_id)->first()->pivot->is_suspend;
+    }
+
+    /*** Terminate  Session */
+    public function terminateSession($company_id = null,$timestamp = null)
+    {
+        // Set User To Inactive 
+        $this->companies()->where('company_id',$company_id)->update([
+            'is_active' => false
+        ]);
+
+        // Set termination date
+        $end_date =  $timestamp ?? now();
+        
+        // Set company id (note: not recommended to not send company id in case u used it on third party request)
+        $company_id = $company_id ?? $this->active_company_id;
+
+        // Session Select
+        $session = $this->session()->where('company_id',$company_id)->latest()->first();
+
+        // Terminate session if it exist
+        if ( $session ) {
+            $session->end_date = $end_date;
+            $session->total_session_time = strtotime($end_date) - strtotime($session->start_date);
+            $session->save();
+
+            // Send Notify To Root Account
+            event(new SessionEvent([
+                'status_id' => $session->status_id,
+                'total_session_time' => $session->total_session_time,
+                'company_id' => $session->company_id
+            ])); 
+        }        
+    }
+
+    /*** openSession */
+    public function openSession($company_id,$timestamp = null)
+    {
+        // Set User To Active
+        $this->companies()->where('company_id',$company_id)->update([
+            'is_active' => true
+        ]);
+        
+        // Create Session
+        $session = $this->session()->create([
+            'company_id' => $company_id,
+            'status_id'  => $this->status_id,
+            'start_date' => $timestamp ?? now()
+        ]);
+    }
+
+    /*** Export Members Monitoring Sheet */
+    public function exportMonitoringSheet($export)
+    {
+        // Set Start Date 
+        if ( $export['input']['duration'] == 1 ) {
+            $start_date = date('m-01-Y');
+        } else if ( $export['input']['duration'] == 2 ) {
+            $start_date = date('Y-m-01', strtotime(now(). ' - 2 months'));
+        } else {
+            $start_date = date('Y-m-01', strtotime(now(). ' - 3 months'));
+        }
+
+        $end_date  = date('Y-m-d');
+
+        // Filter Users
+        $startID = 40 * ($export['input']['filters']['page'] - 1);
+        $endID   = $startID + 40;
+
+        $users = User::filter($export['input']['filters'])->with(['session' => function ($query) use ($start_date,$end_date) {
+            $query->whereBetween('created_at',[$start_date,$end_date]);
+        }])->whereBetween('id',[$startID,$endID])->get();
+
+        // Set File Name
+        $filename = 'exporting/'.Auth::user()->active_company_id.'/'.rand(100000,9000000).'.xlsx';
+
+        // Generate Excel Sheet
+        Excel::store(new UserMonitoringSheet($users),$filename,'main');
+
+        return [
+            'path' => env('APP_URL').'/'. $filename
+        ];
     }
 
     // Scopes
@@ -292,9 +421,59 @@ class User extends Authenticatable
             $query->where('name','like','%'.$request["input"]['name'].'%');
         }
         
-        $query->where('active_company_id',Auth::user()->active_company_id);
+        $query->whereHas('companies',function ($subQuery) {
+            $subQuery->where('company_id',Auth::user()->active_company_id);
+        });
         
         return $query;
+    }
+
+    // Attributes
+
+    /*** Get Active Hours */
+    public function getActiveHoursAttribute()
+    {
+        $tracked_time = $this->session->where('status_id',ACTIVE)->sum('total_session_time');
+        return sprintf('%dh %dm', $tracked_time / 3600, floor($tracked_time / 60) % 60);
+    }
+
+    /*** Get Idle Hours */
+    public function getIdleHoursAttribute()
+    {
+        $tracked_time = $this->session->where('status_id',IDLE)->sum('total_session_time');
+        return sprintf('%dh %dm', $tracked_time / 3600, floor($tracked_time / 60) % 60);
+    }
+
+    /*** Meeting Idle Hours */
+    public function getMeetingHoursAttribute()
+    {
+        $tracked_time = $this->session->where('status_id',MEETING)->sum('total_session_time');
+        return sprintf('%dh %dm', $tracked_time / 3600, floor($tracked_time / 60) % 60);
+    }
+
+    /*** Get Total Hours */
+    public function getTotalHoursAttribute()
+    {
+        $tracked_time = $this->session->sum('total_session_time');
+        return sprintf('%dh %dm', $tracked_time / 3600, floor($tracked_time / 60) % 60);
+    }
+
+    /*** Get Companies User Allowed To Access */
+    public function getAccessableCompaniesAttribute()
+    {
+        return $this->companies()->wherePivot('is_suspend',false)->get();
+    }
+
+    /*** Get If Current User Is Root Account On Current Workshop */
+    public function getIsRootAttribute()
+    {
+        return $this->companies()->wherePivot('user_id',Auth::user()->id)->where('companies.id',Auth::user()->active_company_id)->count();
+    }
+
+    /*** Get If Current User Is Suspended On Current Workshop */
+    public function getIsSuspendAttribute()
+    {
+        return $this->companies()->wherePivot('is_suspend',1)->where('companies.id',Auth::user()->active_company_id)->count();
     }
 
     // Relations
@@ -305,7 +484,7 @@ class User extends Authenticatable
 
     public function companies()
     {
-        return $this->belongsToMany(Company::class);
+        return $this->belongsToMany(Company::class)->withPivot(['is_suspend']);
     }
 
     public function otp()
