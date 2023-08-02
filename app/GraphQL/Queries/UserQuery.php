@@ -17,7 +17,7 @@ final class UserQuery
     /*** Filter Users In WorkSpace */
     public function filterUser($_,array $args)
     {
-        return User::filter($args)->paginate($args['first']);
+        return User::filter($args)->where('id','!=',Auth::user()->id)->paginate($args['first']);
     }
 
     /*** Check Oto */
@@ -30,5 +30,10 @@ final class UserQuery
     public function exportMonitoringSheet($_,array $args)
     {
         return  $this->user->exportMonitoringSheet($args);
+    }
+
+    public function pendingEmails($_,array $args)
+    {
+        return $this->user->pendingEmails($args);
     }
 }

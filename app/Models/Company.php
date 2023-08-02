@@ -55,7 +55,7 @@ class Company extends Model
             ->newSubscription('bronze_plan',['price_1N43m6KV5l49k0XZkSKy9RHQ'])
             ->quantity($request['seats'])
             ->create($request['billing']['id'], [
-                'name'  => ($request['billing']['name'] == null) ? $request['billing']['email'] : $request['user']['name'] ,
+                'name'  => ($request['billing']['name'] == null) ? $request['billing']['name'] : $request['user']['name'] ,
                 'email' => ($request['billing']['email'] == null) ? $request['billing']['email'] : $request['user']['email'],
                 'phone' =>  $request['billing']['phone'] ?? null
             ]);

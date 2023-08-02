@@ -16,4 +16,13 @@ class UserPolicy
 
         return true;
     }
+
+    public function isRootUser(User $user) {
+        if ( ! $user->is_root ) {
+            return false;
+        }
+
+        return true;
+    }
+    
 }

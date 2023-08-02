@@ -1,0 +1,16 @@
+extend type Query {
+    dashboard: User
+} 
+
+type statistics {
+    users_statistics: UserStatistics
+    users_chart: [Int]
+}
+
+type UserStatistics {
+    total_members: Int
+    active_members: Int
+    suspended_members: Int
+    deleted_members: Int
+    offline_members: Int
+}

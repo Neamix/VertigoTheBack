@@ -2,36 +2,44 @@
 
 namespace App\Events;
 
-use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
-class UserStatusEvent implements ShouldBroadcastNow
+class MembersEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $user;
-  
-    public function __construct(array $user)
+    /**
+     * Create a new event instance.
+     *
+     * @return void
+     */
+
+    protected $pendingEmail;
+
+    public function __construct(array $pendingEmail)
     {
-        $this->user = $user;
+        $this->pendingEmail = $pendingEmail;
     }
-  
-    public function broadcastOn(): array
+
+    /**
+     * Get the channels the event should broadcast on.
+     *
+     * @return \Illuminate\Broadcasting\Channel|array
+     */
+    public function broadcastOn()
     {
         return [
-            new PresenceChannel('company.'.Auth::user()->active_company_id),
+            new PresenceChannel('company-member.'.Auth::user()->active_company_id),
         ];
     }
-  
+
     public function broadcastAs()
     {
         return 'status';

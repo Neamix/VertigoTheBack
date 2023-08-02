@@ -12,4 +12,3 @@ type Session {
     end_date: DateTime,
     created_month: String
 }
-

@@ -19,7 +19,6 @@ class PusherService  {
         $notification = $this->request;
         $timestamp = date('Y-m-d H:i:s',$notification['time_ms']/1000);
         $event = $notification['events'][0];
-        Log::info($this->request);
         // Start / Terminate Session
         if ( $notification['events'][0]['name'] == 'member_added') {
             Session::createSession($event,$timestamp);

@@ -23,6 +23,10 @@ final class ToggleUserSuspendedValidator extends Validator
                 if ( ! $user_exist ) {
                     return $fail(__('validation.error_occure_code_v102'));
                 }
+
+                if ( Auth::user()->id == $value ) {
+                    return $fail(__('validation.error_occure_code_v104'));
+                }
             }]
         ];
     }

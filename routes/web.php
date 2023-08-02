@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\RequestsController;
 use App\Http\Controllers\WebhookController;
+use App\Models\Session;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,3 +28,17 @@ Route::post('pusher/webhook',[WebhookController::class,'handlePusherEvent']);
 
 // Accept Invitation
 Route::get('accept/invitation',[RequestsController::class,'handleInvitationRequest'])->middleware('accept.invitation');
+
+Route::get('/hash',function () {
+    dd(bcrypt('password'));
+});
+
+Route::get('/test',function () {
+    $sessons =  Session::all()
+    ->groupBy(function($val) {
+        return date('M',strtotime($val->created_at));
+    })->mapWithKeys(function($item,$key) {
+        return [$key => count($item)];
+    });
+    dd($sessons);
+});

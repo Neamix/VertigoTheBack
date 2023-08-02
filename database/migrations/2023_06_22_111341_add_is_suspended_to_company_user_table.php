@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('company_user', function (Blueprint $table) {
-            $table->boolean('is_suspend')->after('user_id')->default(1);
+            $table->boolean('is_suspend')->after('user_id')->default(0);
         });
     }
 

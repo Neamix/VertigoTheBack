@@ -47,7 +47,7 @@ class User extends Authenticatable
     ];
 
     /*** Authunticate new user */
-    public function login(string $email,string $password)
+    static function login(string $email,string $password)
     {       
         // Get Relevent User
         $user = User::where('email',$email)->first();
@@ -227,6 +227,7 @@ class User extends Authenticatable
             $user->status_id = 1;
         }
 
+        // Change User Active Company To The New Company
         $user->active_company_id = $company->id;
         $user->save();
 
@@ -243,7 +244,7 @@ class User extends Authenticatable
         $token = rand(10000,99999999);
 
         // Save Join Request
-        JoinRequest::updateOrCreate([
+        $request = JoinRequest::updateOrCreate([
             'email' => $data['email']
         ],
         [
@@ -260,7 +261,8 @@ class User extends Authenticatable
         ]);
 
         return [
-            'email' => $data['email']
+            'email' => $request->email,
+            'id'    => $request->id
         ];
     }
 
@@ -294,6 +296,7 @@ class User extends Authenticatable
     /*** Generate Root User */
     static function generateRootUser(array $request,$company_id)
     {
+        // Create Root User
         $rootUser = self::create([
             'name'  => $request['name'],
             'email' => $request['email'],
@@ -302,7 +305,8 @@ class User extends Authenticatable
             'phone' => $request['phone'] ?? null,
             'active_company_id' => $company_id
         ]);
-
+        
+        // Attach Root User To The Created Company
         $rootUser->companies()->attach($company_id);
 
         return $rootUser;
@@ -374,7 +378,7 @@ class User extends Authenticatable
         ]);
         
         // Create Session
-        $session = $this->session()->create([
+        $this->session()->create([
             'company_id' => $company_id,
             'status_id'  => $this->status_id,
             'start_date' => $timestamp ?? now()

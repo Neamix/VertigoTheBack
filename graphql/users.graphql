@@ -6,6 +6,7 @@ extend type Query {
     checkOtp(input: UserOtp): UserResetResponse @field(resolver:"App\\GraphQL\\Queries\\UserQuery@checkOtp")
     me: User @auth
     exportMonitoringSheet(input: ExportingUser): ExportResponse @field(resolver: "App\\GraphQL\\Queries\\UserQuery@exportMonitoringSheet")
+    pendingMembers: [PendingEmails] @field(resolver: "App\\GraphQL\\Queries\\JoinRequestQuery@pendingRequests") @can(ability: "isRootUser",model: "App\\Models\\User") @guard
 }
 
 # Mutation
@@ -16,9 +17,10 @@ extend type Mutation {
     acceptInvitation(input: UserInvitationInput): LoginResponse @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@acceptInvitation")
     profile(input: UserProfileInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@profileEdit") @guard
     changeStatus(status_id: Int): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@changeStatus") @guard
-    inviteMember(input: inviteMemberInput): User @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@inviteMember") @guard
+    inviteMember(input: inviteMemberInput): PendingEmails @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@inviteMember") @guard 
     switchCompany(companyid: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@switchCompany") @guard @validator
-    toggleUserSuspended(user_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@toggleUserSuspended") @guard @validator @can(ability: "suspendUser",model:"App\\Models\\User")
+    toggleUserSuspended(user_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@toggleUserSuspended") @validator @can(ability: "isRootUser",model:"App\\Models\\User") @guard
+    deletePendingRequest(request_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\JoinRequestsMutation@deleteRequest") @can(ability: "isRootUser",model:"App\\Models\\User") @guard
 }
 
 # Types 
@@ -63,6 +65,11 @@ type SwitchCompany {
 
 type ExportResponse {
     path: String
+}
+
+type PendingEmails {
+    email: String,
+    id: Int
 }
 
 # Inputs 
