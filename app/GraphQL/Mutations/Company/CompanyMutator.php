@@ -1,8 +1,8 @@
 <?php
 
-namespace App\GraphQL\Mutations\Company;
+namespace App\GraphQL\Mutations\Workspace;
 
-final class CompanyMutator
+final class WorkspaceMutator
 {
     /**
      * @param  null  $_

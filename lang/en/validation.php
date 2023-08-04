@@ -162,6 +162,7 @@ return [
     'error_occure_code_v102' => "Error Occure Code V102",
     'error_occure_code_v103' => "Error Occure Code V103",
     'error_occure_code_v104' => "Error Occure Code V104",
+    'error_occure_code_v105' => "Error Occure Code V1045",
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines

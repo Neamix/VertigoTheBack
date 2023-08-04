@@ -16,14 +16,14 @@ class Session extends Model
     /*** Open Session */
     static function createSession($data,$timestamp)
     {
-        // Get Company ID
-        $company_id = explode('.',$data['channel'])[1];
+        // Get Workspace ID
+        $workspace_id = explode('.',$data['channel'])[1];
 
         // Get User In Action 
         $user = User::find($data['user_id']);
 
         // Open new session
-        $user->openSession($company_id,$timestamp);
+        $user->openSession($workspace_id,$timestamp);
     }
 
     /*** Close Session */
@@ -31,22 +31,22 @@ class Session extends Model
     {
         // Select User
         $user = User::where('id',$data['user_id'])->first();
-        $company_id = explode('.',$data['channel'])[1];
+        $workspace_id = explode('.',$data['channel'])[1];
         
         // Terminate Session
-        $user->terminateSession($company_id,$timestamp);
+        $user->terminateSession($workspace_id,$timestamp);
     }
 
     /***  Generate Monitoring Sheet */
-    static function generateMonitoringSheet($company_id,$duration_from = null,$duration_to = null,$recipient_email)
+    static function generateMonitoringSheet($workspace_id,$duration_from = null,$duration_to = null,$recipient_email)
     {
-        $sessions = self::where('company_id');
+        $sessions = self::where('workspace_id');
     }
 
     /*** Get All Sessons */
     public function getAllSessions()
     {
-        $sessions = $this->where('company_id',Auth::user()->active_company_id)->whereYear('end_date',date('Y'))->get();
+        $sessions = $this->where('workspace_id',Auth::user()->active_workspace_id)->whereYear('end_date',date('Y'))->get();
         return $sessions;
     }
     
@@ -56,9 +56,9 @@ class Session extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function company()
+    public function workspace()
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(Workspace::class);
     }
 
     // Attributes

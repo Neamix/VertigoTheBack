@@ -61,18 +61,24 @@ class User extends Authenticatable
             ];
         }
 
-        // Make Firt Company Is The Active Company In Case User Doesn't Have One
-        if ( ! $user->active_company_id ) {
-            $user->active_company_id = $user->companies->first()->id;
+        // Make Firt Workspace Is The Active Workspace In Case User Doesn't Have One
+        if ( ! $user->active_workspace_id ) {
+            $user->active_workspace_id = $user->companies->first()->id;
             $user->save();
         }
 
         // Return Success Response
-        return [
-            'status' => "Success",
-            'token' => $user->createToken('login')->accessToken,
-            'user' => $user
-        ];
+        return ['status' => "Success",'token' => $user->createToken('login')->accessToken,'user' => $user];
+    }
+
+    /*** User Logout */
+    public function logout()
+    {
+        Auth::user()->token()->revoke();
+        // return [
+        //     'Status' => 'Success',
+        //     ''
+        // ]
     }
 
     /*** Send forget email **/
@@ -83,11 +89,7 @@ class User extends Authenticatable
         $otp = Otp::generateOtp($user,'password_reset');
 
         // Send Forget Email
-        $this->forgetPasswordMail([
-            'name'  => $user->name,
-            'to_email' => $user->email,
-            'otp'   => $otp['otp']
-        ]);
+        $this->forgetPasswordMail(['name'  => $user->name,'to_email' => $user->email,'otp'   => $otp['otp']]);
         
         return $otp['verification_id'];
     }
@@ -100,11 +102,7 @@ class User extends Authenticatable
         $otp  = $user->otp->where('otp',$otp)->first();
 
         // Send Status
-        if ( $otp ) {
-            return ['status' => 'Success'];
-        } else {
-            return ['status' => 'Failed'];
-        }
+        return ($otp) ? ['status' => 'Success'] : ['status' => 'Failed'];
     }
 
     /*** Add New Password */
@@ -112,25 +110,18 @@ class User extends Authenticatable
     {
         $user = User::where('email',$email)->first();
 
-        // Get Otp
-        $userOtp = Otp::where([
-            'user_id' => $user->id,
-            'otp'   => $otp,
-            'type'  => 'password_reset'
-        ])->first();
+        // Get Otp Releated To User
+        $userOtp = Otp::where(['user_id' => $user->id,'otp' => $otp,'type'  => 'password_reset'])->first();
 
-        // Check Otp & verification id is right or not
         if ( password_verify($verification_id,$userOtp->verification_id) ) {
+            // Hash user password
             $user->password = Hash::make($password);
             $user->save();
-            return [
-                'status' => "Success",
-                'token'  => $this->login($email,$password)['token']
-            ];
+
+            // Return Response
+            return ['status' => "Success",'token'  => $this->login($email,$password)['token']];
         } else {
-            return [
-                'status' => "Fail"
-            ];
+            return ['status' => "Fail"];
         }
     }
 
@@ -169,10 +160,10 @@ class User extends Authenticatable
         $this->save();
 
         // Close Current Session
-        Auth::user()->terminateSession(Auth::user()->active_company_id);
+        Auth::user()->terminateSession(Auth::user()->active_workspace_id);
         
         // Open New Session
-        Auth::user()->openSession(Auth::user()->active_company_id);
+        Auth::user()->openSession(Auth::user()->active_workspace_id);
 
         // Send Pusher Event
         event(new UserStatusEvent([
@@ -211,11 +202,11 @@ class User extends Authenticatable
         // Get User Under Action
         $user = self::where('email',$data['email'])->first();
 
-        // Attach User To The New Company
-        $user->companies()->attach($joinRequest['company_id']);
+        // Attach User To The New Workspace
+        $user->companies()->attach($joinRequest['workspace_id']);
 
-        // Get The Requested Company
-        $company = $joinRequest->company()->first(['name','id']);
+        // Get The Requested Workspace
+        $workspace = $joinRequest->workspace()->first(['name','id']);
         
         // Terminate Join Request
         $joinRequest->delete();
@@ -227,8 +218,8 @@ class User extends Authenticatable
             $user->status_id = 1;
         }
 
-        // Change User Active Company To The New Company
-        $user->active_company_id = $company->id;
+        // Change User Active Workspace To The New Workspace
+        $user->active_workspace_id = $workspace->id;
         $user->save();
 
         // Authunticate User
@@ -250,13 +241,13 @@ class User extends Authenticatable
         [
             'email' => $data['email'],
             'token' => bcrypt($token),
-            'company_id' => Auth::user()->active_company_id,
+            'workspace_id' => Auth::user()->active_workspace_id,
         ]);
 
         // Send Invitation Request
         $this->joinUsMail([
             'to_email' => $data['email'],
-            'company'  => Company::find(Auth::user()->active_company_id)->name,
+            'workspace'  => Workspace::find(Auth::user()->active_workspace_id)->name,
             'token'    => url("/accept/invitation?token=$token&email=".$data['email'])
         ]);
 
@@ -280,11 +271,11 @@ class User extends Authenticatable
         return $user;
     }
 
-    /*** Switch Active Company */
-    public function switchCompany(array $request)
+    /*** Switch Active Workspace */
+    public function switchWorkspace(array $request)
     {
-        // Switch Company In DB
-        $this->active_company_id = $request['companyid'];
+        // Switch Workspace In DB
+        $this->active_workspace_id = $request['workspaceid'];
         $this->save();
 
         return [
@@ -294,7 +285,7 @@ class User extends Authenticatable
     }
 
     /*** Generate Root User */
-    static function generateRootUser(array $request,$company_id)
+    static function generateRootUser(array $request,$workspace_id)
     {
         // Create Root User
         $rootUser = self::create([
@@ -303,27 +294,28 @@ class User extends Authenticatable
             'password' => Hash::make($request['password']),
             'type'  => 2,
             'phone' => $request['phone'] ?? null,
-            'active_company_id' => $company_id
+            'active_workspace_id' => $workspace_id
         ]);
         
-        // Attach Root User To The Created Company
-        $rootUser->companies()->attach($company_id);
+        // Attach Root User To The Created Workspace
+        $rootUser->companies()->attach($workspace_id);
 
         return $rootUser;
     }
 
     /*** Toggle Suspend User */
-    public function toggleUserSuspended($user_id) {
+    public function toggleUserSuspended($user_id) 
+    {
         // Get User Under Action
         $user = User::where([
             'id' => $user_id
         ])->first();
         
         // Get User Status
-        $is_suspended = $user->companies()->where('company_id',$this->active_company_id)->first()->is_suspend;
+        $is_suspended = $user->companies()->where('workspace_id',$this->active_workspace_id)->first()->pivot->is_suspend;
 
         // Reverse Status
-        $user->companies()->updateExistingPivot($this->active_company_id,[
+        $user->companies()->updateExistingPivot($this->active_workspace_id,[
            'is_suspend' => ! $is_suspended
         ]);
     
@@ -332,27 +324,40 @@ class User extends Authenticatable
         ];
     }
 
+    /*** Delete User */
+    public function deleteUser($user_id) 
+    {   
+        // Get User Under Action
+        $user = User::where([
+            'id' => $user_id
+        ])->first();
+        
+        // Terminate User
+        $user->delete();
+    }
+
     /*** Check If User Suspended Or Not */
-    public function isSuspended() {
-        return $this->companies()->where('company_id',$this->active_company_id)->first()->pivot->is_suspend;
+    public function isSuspended() 
+    {
+        return $this->companies()->where('workspace_id',$this->active_workspace_id)->first()->pivot->is_suspend;
     }
 
     /*** Terminate  Session */
-    public function terminateSession($company_id = null,$timestamp = null)
+    public function terminateSession($workspace_id = null,$timestamp = null)
     {
         // Set User To Inactive 
-        $this->companies()->where('company_id',$company_id)->update([
+        $this->companies()->where('workspace_id',$workspace_id)->update([
             'is_active' => false
         ]);
 
         // Set termination date
         $end_date =  $timestamp ?? now();
         
-        // Set company id (note: not recommended to not send company id in case u used it on third party request)
-        $company_id = $company_id ?? $this->active_company_id;
+        // Set workspace id (note: not recommended to not send workspace id in case u used it on third party request)
+        $workspace_id = $workspace_id ?? $this->active_workspace_id;
 
         // Session Select
-        $session = $this->session()->where('company_id',$company_id)->latest()->first();
+        $session = $this->session()->where('workspace_id',$workspace_id)->latest()->first();
 
         // Terminate session if it exist
         if ( $session ) {
@@ -364,22 +369,22 @@ class User extends Authenticatable
             event(new SessionEvent([
                 'status_id' => $session->status_id,
                 'total_session_time' => $session->total_session_time,
-                'company_id' => $session->company_id
+                'workspace_id' => $session->workspace_id
             ])); 
         }        
     }
 
     /*** openSession */
-    public function openSession($company_id,$timestamp = null)
+    public function openSession($workspace_id,$timestamp = null)
     {
         // Set User To Active
-        $this->companies()->where('company_id',$company_id)->update([
+        $this->companies()->where('workspace_id',$workspace_id)->update([
             'is_active' => true
         ]);
         
         // Create Session
         $this->session()->create([
-            'company_id' => $company_id,
+            'workspace_id' => $workspace_id,
             'status_id'  => $this->status_id,
             'start_date' => $timestamp ?? now()
         ]);
@@ -408,7 +413,7 @@ class User extends Authenticatable
         }])->whereBetween('id',[$startID,$endID])->get();
 
         // Set File Name
-        $filename = 'exporting/'.Auth::user()->active_company_id.'/'.rand(100000,9000000).'.xlsx';
+        $filename = 'exporting/'.Auth::user()->active_workspace_id.'/'.rand(100000,9000000).'.xlsx';
 
         // Generate Excel Sheet
         Excel::store(new UserMonitoringSheet($users),$filename,'main');
@@ -426,7 +431,7 @@ class User extends Authenticatable
         }
         
         $query->whereHas('companies',function ($subQuery) {
-            $subQuery->where('company_id',Auth::user()->active_company_id);
+            $subQuery->where('workspace_id',Auth::user()->active_workspace_id);
         });
         
         return $query;
@@ -471,13 +476,13 @@ class User extends Authenticatable
     /*** Get If Current User Is Root Account On Current Workshop */
     public function getIsRootAttribute()
     {
-        return $this->companies()->wherePivot('user_id',Auth::user()->id)->where('companies.id',Auth::user()->active_company_id)->count();
+        return Workspace::where('user_id',Auth::user()->id)->count();
     }
 
     /*** Get If Current User Is Suspended On Current Workshop */
     public function getIsSuspendAttribute()
     {
-        return $this->companies()->wherePivot('is_suspend',1)->where('companies.id',Auth::user()->active_company_id)->count();
+        return $this->companies()->wherePivot('is_suspend',1)->where('companies.id',Auth::user()->active_workspace_id)->count();
     }
 
     // Relations
@@ -488,7 +493,7 @@ class User extends Authenticatable
 
     public function companies()
     {
-        return $this->belongsToMany(Company::class)->withPivot(['is_suspend']);
+        return $this->belongsToMany(Workspace::class)->withPivot(['is_suspend']);
     }
 
     public function otp()
@@ -501,9 +506,9 @@ class User extends Authenticatable
         return $this->belongsTo(Status::class);
     }
 
-    public function activeCompany()
+    public function activeWorkspace()
     {
-        return $this->belongsTo(Company::class,'active_company_id');
+        return $this->belongsTo(Workspace::class,'active_workspace_id');
     }
 
     public function session()

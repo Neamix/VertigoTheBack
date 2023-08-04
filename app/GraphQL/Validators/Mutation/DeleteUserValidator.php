@@ -2,11 +2,11 @@
 
 namespace App\GraphQL\Validators\Mutation;
 
-use Exception;
+use App\Models\Workspace;
 use Illuminate\Support\Facades\Auth;
 use Nuwave\Lighthouse\Validation\Validator;
 
-final class ToggleUserSuspendedValidator extends Validator
+final class DeleteUserValidator extends Validator
 {
     /**
      * Return the validation rules.
@@ -16,16 +16,12 @@ final class ToggleUserSuspendedValidator extends Validator
     public function rules(): array
     {
         return [
-            'user_id' => ['required',function ($attribute,$value,$fail) {
-                // Get Root User Of Current Workspace
+            'user_id' => [function ($attribute,$value,$fail) {
+                // Check if user belong to active workspace of auth
                 $user_exist = Auth::user()->activeWorkspace->users->where('id',$value)->count();
 
                 if ( ! $user_exist ) {
                     return $fail(__('validation.error_occure_code_v102'));
-                }
-
-                if ( Auth::user()->id == $value ) {
-                    return $fail(__('validation.error_occure_code_v104'));
                 }
             }]
         ];

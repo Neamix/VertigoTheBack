@@ -3,7 +3,7 @@ extend type Query {
 }
 
 type Session {
-    company: Company @belongsTo,
+    workspace: Workspace @belongsTo,
     user: User @belongsTo,
     total_session_time: String,
     status_id: ID,

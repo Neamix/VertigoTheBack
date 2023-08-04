@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Company;
+use App\Models\Workspace;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class CompanySeeder extends Seeder
+class WorkspaceSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,7 +15,7 @@ class CompanySeeder extends Seeder
      */
     public function run()
     {
-        Company::updateOrCreate([
+        Workspace::updateOrCreate([
             'id' => 1
         ],[
             'id'   => 1,

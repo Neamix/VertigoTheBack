@@ -65,15 +65,21 @@ final class UserMutation
         return $this->user->acceptInvitation($args['input']);
     }
 
-    // Switch Company
-    public function switchCompany($_,array $args)
+    // Switch Workspace
+    public function switchWorkspace($_,array $args)
     {
-        return Auth::user()->switchCompany($args);
+        return Auth::user()->switchWorkspace($args);
     }
 
     // Toggle Suspended User 
     public function toggleUserSuspended($_,array $args)
     {
         return Auth::user()->toggleUserSuspended($args['user_id']);
+    }
+
+    // Delete User
+    public function deleteUser($_,array $args)
+    {
+        return Auth::user()->deleteUser($args['user_id']);
     }
 }

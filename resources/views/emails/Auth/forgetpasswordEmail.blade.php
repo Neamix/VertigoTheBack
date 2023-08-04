@@ -189,10 +189,10 @@
                                                             <td class="pad"
                                                                 style="width:100%;padding-right:0px;padding-left:0px;">
                                                                 <div align="center" class="alignment"
-                                                                    style="line-height:10px"><img alt="Company Logo"
+                                                                    style="line-height:10px"><img alt="Workspace Logo"
                                                                         src="images/logo_password_header.png"
                                                                         style="display: block; height: auto; border: 0; width: 147px; max-width: 100%;"
-                                                                        title="Company Logo" width="147" /></div>
+                                                                        title="Workspace Logo" width="147" /></div>
                                                             </td>
                                                         </tr>
                                                     </table>

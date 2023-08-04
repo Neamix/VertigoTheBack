@@ -2,19 +2,19 @@
 
 namespace App\GraphQL\Mutations;
 
-use App\Models\Company;
+use App\Models\Workspace;
 
-final class CompanyMutator
+final class WorkspaceMutator
 {
-    private $company;
+    private $workspace;
 
-    public function __construct(Company $company)
+    public function __construct(Workspace $workspace)
     {
-        $this->company = $company;
+        $this->workspace = $workspace;
     }
 
     public function register($_, array $args)
     {
-        return $this->company->register($args['input']);
+        return $this->workspace->register($args['input']);
     }
 }

@@ -14,17 +14,17 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('company.{company_id}', function ($user,$company_id) {
-    if ( $user->active_company_id == $company_id ) {
-        return ['user_id' => $user->id,'company_id' => $company_id];
+Broadcast::channel('workspace.{workspace_id}', function ($user,$workspace_id) {
+    if ( $user->active_workspace_id == $workspace_id ) {
+        return ['user_id' => $user->id,'workspace_id' => $workspace_id];
     }
 
     return false;
 });
 
-Broadcast::channel('company-members.{company_id}', function ($user,$company_id) {
-    if ( $user->active_company_id == $company_id ) {
-        return ['user_id' => $user->id,'company_id' => $company_id];
+Broadcast::channel('workspace-members.{workspace_id}', function ($user,$workspace_id) {
+    if ( $user->active_workspace_id == $workspace_id ) {
+        return ['user_id' => $user->id,'workspace_id' => $workspace_id];
     }
 
     return false;
@@ -32,6 +32,6 @@ Broadcast::channel('company-members.{company_id}', function ($user,$company_id) 
 
 
 
-Broadcast::channel('company-session-{company_id}', function ($company_id,$total_session_time) {
-    return ['company_id' => $company_id,'total_session_time' => $total_session_time];
+Broadcast::channel('workspace-session-{workspace_id}', function ($workspace_id,$total_session_time) {
+    return ['workspace_id' => $workspace_id,'total_session_time' => $total_session_time];
 });

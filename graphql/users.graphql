@@ -18,20 +18,21 @@ extend type Mutation {
     profile(input: UserProfileInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@profileEdit") @guard
     changeStatus(status_id: Int): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@changeStatus") @guard
     inviteMember(input: inviteMemberInput): PendingEmails @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@inviteMember") @guard 
-    switchCompany(companyid: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@switchCompany") @guard @validator
+    switchWorkspace(workspaceid: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@switchWorkspace") @guard @validator
     toggleUserSuspended(user_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@toggleUserSuspended") @validator @can(ability: "isRootUser",model:"App\\Models\\User") @guard
     deletePendingRequest(request_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\JoinRequestsMutation@deleteRequest") @can(ability: "isRootUser",model:"App\\Models\\User") @guard
+    deleteUser(user_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@deleteUser") @validator @can(ability: "isRootUser",model:"App\\Models\\User") @guard 
 }
 
 # Types 
-type User @authorized{
+type User {
     id: ID,
     email: String,
     name:  String,
     token: String,
     status: Status @belongsTo,
-    active_company_id: ID,
-    accessable_companies: [Company],
+    active_workspace_id: ID,
+    accessable_companies: [Workspace],
     is_suspend: Boolean,
     is_root: Boolean 
 }
@@ -58,8 +59,8 @@ type Response {
     user: User
 }
 
-type SwitchCompany {
-    company: Company,
+type SwitchWorkspace {
+    workspace: Workspace,
     users: User
 }
 

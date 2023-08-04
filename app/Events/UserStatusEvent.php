@@ -28,7 +28,7 @@ class UserStatusEvent implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new PresenceChannel('company.'.Auth::user()->active_company_id),
+            new PresenceChannel('workspace.'.Auth::user()->active_workspace_id),
         ];
     }
   

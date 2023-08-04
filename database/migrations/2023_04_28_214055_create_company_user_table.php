@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('company_user', function (Blueprint $table) {
+        Schema::create('workspace_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id');
+            $table->foreignId('workspace_id');
             $table->foreignId('user_id');
             $table->timestamps();
         });
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('company_user');
+        Schema::dropIfExists('workspace_user');
     }
 };

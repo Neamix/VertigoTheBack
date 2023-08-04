@@ -18,6 +18,7 @@
         "mll-lab/laravel-graphiql": "^1.2",
         "mll-lab/laravel-graphql-playground": "^2.6",
         "nuwave/lighthouse": "^5.70",
+        "prettus/l5-repository": "^2.9",
         "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-newsletter": "^4.11",
         "stripe/stripe-php": "^10.12"

@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Company;
+use App\Models\Workspace;
 use Illuminate\Http\Request;
 
 class StripeController extends Controller
 {
-    public function downloadInvoice(Company $company,$inoviceID)
+    public function downloadInvoice(Workspace $workspace,$inoviceID)
     {
-        return $company->generateInvoice($inoviceID);
+        return $workspace->generateInvoice($inoviceID);
     }
 }

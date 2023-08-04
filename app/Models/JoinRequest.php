@@ -17,21 +17,22 @@ class JoinRequest extends Model
     {
         self::create([
             'email' => $request['email'],
-            'company_id' => $request['company_id'],
+            'workspace_id' => $request['workspace_id'],
         ]);
     }
 
     /*** Get Pending Request */
     public function getPendingRequests()
     {
-        return $this->filter(['company_id' => Auth::user()->active_company_id])->get(['email','id']);
+        return $this->filter(['workspace_id' => Auth::user()->active_workspace_id])->get(['email','id']);
     }
 
     /*** Delete Pending Request */
     public function deletePendingRequest($request_id)
     {
-        JoinRequest::where(['company_id' => Auth::user()->active_company_id,'id' => $request_id])->delete();
-        
+        // Delete Join Request
+        JoinRequest::where(['workspace_id' => Auth::user()->active_workspace_id,'id' => $request_id])->delete();
+
         return [
             'status'  => true,
             'message' => 'Join requests has been deleted'
@@ -41,17 +42,17 @@ class JoinRequest extends Model
     // Scopes
     public function scopeFilter($query,$request)
     {
-        if ( isset($request['company_id']) ) {
-            $query->where('company_id',$request['company_id']);
+        if ( isset($request['workspace_id']) ) {
+            $query->where('workspace_id',$request['workspace_id']);
         }
 
         return $query;
     }
 
     // Relation
-    public function company()
+    public function workspace()
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(Workspace::class);
     }
 
     public function user()

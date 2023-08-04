@@ -45,7 +45,7 @@
                     </section>
                     <section class="details" style="border-top: 1px solid #e3e3e3; margin: 22px 0px;padding: 10px 0">
                         <div class="download-links">
-                            <a href="{{ route('stripe.invoice',['company' => $data['company'],'invoiceID' => $data['invoiceID']]) }}" style="font-size: 13px;color: 7a7a7a;text-decoration: none;padding: 0 20px;">Download Receipt</a>
+                            <a href="{{ route('stripe.invoice',['workspace' => $data['workspace'],'invoiceID' => $data['invoiceID']]) }}" style="font-size: 13px;color: 7a7a7a;text-decoration: none;padding: 0 20px;">Download Receipt</a>
                         </div>
                         <table style="width: 100%; margin: 10px 0">
                             <tr style="width: 100%;  margin-top: 4px">

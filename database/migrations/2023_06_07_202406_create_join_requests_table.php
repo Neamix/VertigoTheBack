@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('join_requests', function (Blueprint $table) {
             $table->id();
             $table->string('email');
-            $table->foreignId('company_id');
+            $table->foreignId('workspace_id');
             $table->string('token');
             $table->timestamps();
         });

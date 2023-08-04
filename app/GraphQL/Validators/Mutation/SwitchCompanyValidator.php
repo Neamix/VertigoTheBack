@@ -5,7 +5,7 @@ namespace App\GraphQL\Validators\Mutation;
 use Illuminate\Support\Facades\Auth;
 use Nuwave\Lighthouse\Validation\Validator;
 
-final class SwitchCompanyValidator extends Validator
+final class SwitchWorkspaceValidator extends Validator
 {
     /**
      * Return the validation rules.
@@ -15,11 +15,11 @@ final class SwitchCompanyValidator extends Validator
     public function rules(): array
     {
         return [
-           'companyid' => ['required',function ($attribute,$value,$fail) {
-                // Check User if he joined That Company
-                $isUserJoinCompany = Auth::user()->companies->where('id',$value)->count();
+           'workspaceid' => ['required',function ($attribute,$value,$fail) {
+                // Check User if he joined That Workspace
+                $isUserJoinWorkspace = Auth::user()->companies->where('id',$value)->count();
 
-                if ( ! $isUserJoinCompany ) {
+                if ( ! $isUserJoinWorkspace ) {
                     return $fail(__('validation.error_occure_code_v101'));
                 }
            }]
