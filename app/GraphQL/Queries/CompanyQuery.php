@@ -2,19 +2,19 @@
 
 namespace App\GraphQL\Queries;
 
-use App\Models\Workspace;
+use App\Models\Company;
 
-final class WorkspaceQuery
+final class CompanyQuery
 {
-    public $workspace;
+    public $company;
 
-    public function __construct(Workspace $workspace)
+    public function __construct(Company $company)
     {
-        return $this->workspace = $workspace;    
+        return $this->company = $company;    
     }
 
-    public function workspaceHours($_, array $args)
+    public function companyHours($_, array $args)
     {
-        return $this->workspace->workspaceHoursReport();
+        return $this->company->companyHoursReport();
     }
 }

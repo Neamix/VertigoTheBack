@@ -11,12 +11,12 @@ class WebhookController extends CashierController
 {
     public function handleSuccessSubscription(PaymentService $paymentService)
     {
-        $paymentService->getReleventWorkspace()->refreshDueDate($paymentService['object']);
+        $paymentService->getReleventCompany()->refreshDueDate($paymentService['object']);
     }
 
     public function handleCancelSubscription(PaymentService $paymentService)
     {
-        $paymentService->getReleventWorkspace()->cancelSubscription();
+        $paymentService->getReleventCompany()->cancelSubscription();
     }
 
     public function handlePusherEvent(PusherService $pusherService) {

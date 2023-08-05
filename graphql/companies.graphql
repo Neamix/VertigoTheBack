@@ -1,18 +1,18 @@
 # Queries
 extend type Query {
-    workspace(id: ID @eq):  Workspace @find
-    workspaceWithEmail(email: String): Workspace @all
-    dashboardHoursReports: [Workspace]  @field(resolver: "App\\GraphQL\\Queries\\WorkspaceQuery@workspaceHours")
+    company(id: ID @eq):  Company @find
+    companyWithEmail(email: String): Company @all
+    dashboardHoursReports: [Company]  @field(resolver: "App\\GraphQL\\Queries\\CompanyQuery@companyHours")
 }
 
 # Mutation
 extend type Mutation {
-    registerWorkspace(input: WorkspaceRegisterInput): RegisteredWorkspace @field(resolver: "App\\GraphQL\\Mutations\\WorkspaceMutator@register")
+    registerCompany(input: CompanyRegisterInput): RegisteredCompany @field(resolver: "App\\GraphQL\\Mutations\\CompanyMutator@register")
 }
 
 
 # Types 
-type Workspace {
+type Company {
     id: ID,
     name: String,
     email: String,
@@ -25,16 +25,16 @@ type Workspace {
     active: Boolean,
     response: Response,
     time: String
-    pivot: WorkspaceUserPivot,
+    pivot: CompanyUserPivot,
 }
 
-type WorkspaceUserPivot {
-    workspace_id: ID,
+type CompanyUserPivot {
+    company_id: ID,
     is_suspend: Int
 }
 
-type RegisteredWorkspace  {
-    workspace: Workspace,
+type RegisteredCompany  {
+    company: Company,
     user: User,
     token: String,
     status: String,
@@ -50,7 +50,7 @@ type ReportHoursMonth {
 }
 
 # Inputs 
-input WorkspaceRegisterInput @validator {
+input CompanyRegisterInput @validator {
     id: ID,
     name: String,
     email: String,

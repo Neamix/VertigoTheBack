@@ -38,7 +38,7 @@ class SessionEvent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PresenceChannel('workspace-session-'.$this->session['workspace_id'])
+            new PresenceChannel('company-session-'.$this->session['company_id'])
         ];
     }
 

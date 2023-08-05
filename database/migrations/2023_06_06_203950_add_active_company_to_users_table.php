@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('active_workspace_id')->after('type')->nullable();
+            $table->foreignId('active_company_id')->after('type')->nullable();
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('active_workspace_id');
+            $table->dropColumn('active_company_id');
         });
     }
 };

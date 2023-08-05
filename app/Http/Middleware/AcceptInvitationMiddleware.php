@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Workspace;
+use App\Models\Company;
 use App\Models\JoinRequest;
 use Closure;
 use Illuminate\Http\Request;
@@ -26,9 +26,9 @@ class AcceptInvitationMiddleware
         }
 
         $verifiedToken = Hash::check($request->token,$requestInstance->token);
-        $workspaceExist  = Workspace::where(['id' => $requestInstance->workspace_id])->first();
+        $companyExist  = Company::where(['id' => $requestInstance->company_id])->first();
 
-        if ( ! $workspaceExist || ! $verifiedToken) {
+        if ( ! $companyExist || ! $verifiedToken) {
             abort(404);
         }
 

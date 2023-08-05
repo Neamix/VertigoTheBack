@@ -36,7 +36,7 @@ class MembersEvent
     public function broadcastOn()
     {
         return [
-            new PresenceChannel('workspace-member.'.Auth::user()->active_workspace_id),
+            new PresenceChannel('company-member.'.Auth::user()->active_company_id),
         ];
     }
 

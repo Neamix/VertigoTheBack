@@ -23,8 +23,8 @@ trait MailerService
         $send['to_email'] = $data['to_email'];
         $send['view'] = 'emails.Auth.joinUsEmail';
         $send['token'] = $data['token'];
-        $send['subject'] = $data['workspace']." | Invitation mail";
-        $send['workspace'] = $data['workspace'];
+        $send['subject'] = $data['company']." | Invitation mail";
+        $send['company'] = $data['company'];
         self::sendEmail($send);
     }
 
@@ -39,7 +39,7 @@ trait MailerService
         $send['inovice_number'] = $data['inovice_number'];
         $send['credit_pm_last_four'] = $data['credit_pm_last_four'];
         $send['credit_pm_type'] = $data['credit_pm_type'];
-        $send['workspace' ] = $data['workspace'];
+        $send['company' ] = $data['company'];
         $send['invoiceID' ] = $data['invoiceID'];
         self::sendEmail($send);
     }   

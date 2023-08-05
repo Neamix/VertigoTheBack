@@ -35,7 +35,7 @@ final class UserMutation
         return $this->user->resetPassword($args['input']['email'],$args['input']['otp'],$args['input']['verificationID'],$args['input']['password']);
     }   
 
-    // Add New Member In WorkSpace
+    // Add New Member In Company
     public function inviteMember($_,array $args)
     {
         return Auth::user()->inviteRequest($args['input']);
@@ -65,10 +65,10 @@ final class UserMutation
         return $this->user->acceptInvitation($args['input']);
     }
 
-    // Switch Workspace
-    public function switchWorkspace($_,array $args)
+    // Switch Company
+    public function switchCompany($_,array $args)
     {
-        return Auth::user()->switchWorkspace($args);
+        return Auth::user()->switchCompany($args);
     }
 
     // Toggle Suspended User 

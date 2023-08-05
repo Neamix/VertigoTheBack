@@ -11,16 +11,16 @@ use Illuminate\Support\Facades\Log;
 use Laravel\Cashier\Billable;
 use Laravel\Cashier\Events\WebhookReceived;
 
-class Workspace extends Model
+class Company extends Model
 {
     use HasFactory,Billable,MailerService;
 
     protected $guarded = [];
 
     /**
-     * Register new workspace workspace with its root user
+     * Register new company company with its root user
      * 
-     * Note: In case of failing in subscription the workspace and 
+     * Note: In case of failing in subscription the company and 
      * root user that has been created will be deleted
      * 
      * @param array $request
@@ -30,8 +30,8 @@ class Workspace extends Model
 
     public function register(array $request) : array
     {
-        /*** Create new workspace */
-        $workspace = self::create([
+        /*** Create new company */
+        $company = self::create([
             'name'  => $request['name'],
             'email' => $request['email'],
             'country' => $request['country'],
@@ -42,16 +42,16 @@ class Workspace extends Model
         ]);
 
         /*** Generate root user */
-        $rootUser = User::generateRootUser($request['user'],$workspace->id);
+        $rootUser = User::generateRootUser($request['user'],$company->id);
         $token =  $rootUser->login($rootUser->email, $request['user']['password'])['token'];
 
-        /*** Attach Owner To Workspace */
-        $workspace->user_id = $rootUser->id;
-        $workspace->save();
+        /*** Attach Owner To Company */
+        $company->user_id = $rootUser->id;
+        $company->save();
         
         /*** Try to subscripe */
         try {
-            $workspace
+            $company
             ->newSubscription('bronze_plan',['price_1N43m6KV5l49k0XZkSKy9RHQ'])
             ->quantity($request['seats'])
             ->create($request['billing']['id'], [
@@ -62,20 +62,20 @@ class Workspace extends Model
 
             // Send Success Email
             $this->subscripedSuccess([
-                'name'      => $workspace->last_invoice->customer_name,
-                'to_email'  => $workspace->last_invoice->customer_email,
+                'name'      => $company->last_invoice->customer_name,
+                'to_email'  => $company->last_invoice->customer_email,
                 'subject'   => 'Welcome on board',
                 'seats'     => $request['seats'],
-                'invoiceID' => $workspace->last_invoice_id,
-                'workspace'   => $workspace->id,
+                'invoiceID' => $company->last_invoice_id,
+                'company'   => $company->id,
                 'value_per_seat' => 20,
-                'credit_pm_last_four' => $workspace->pm_last_four,
-                'inovice_number' => $workspace->invoice_number,
-                'credit_pm_type' => $workspace->pm_type
+                'credit_pm_last_four' => $company->pm_last_four,
+                'inovice_number' => $company->invoice_number,
+                'credit_pm_type' => $company->pm_type
             ]);
             
             return [
-                'workspace' => $workspace,
+                'company' => $company,
                 'user'    => $rootUser,
                 'token'   => $token,
                 'status'  => "Success"
@@ -84,7 +84,7 @@ class Workspace extends Model
         } catch (Exception $e) {
             /*** Deleted comapany and user */
             $rootUser->delete();
-            $workspace->delete();
+            $company->delete();
 
             return [
                 'status'  => "Failed",
@@ -106,7 +106,7 @@ class Workspace extends Model
     }
 
     /**
-     * Add new due date for workspace after paying subscription 
+     * Add new due date for company after paying subscription 
      * 
      * @return void
     */
@@ -114,8 +114,8 @@ class Workspace extends Model
     public function refreshDueDate()
     {
         /*** Get next due date (fixed 30 days ) and save it in database */
-        $workspace_next_due_date = Carbon::now()->addDays(30)->toDateTimeString();
-        $this->next_due_date  = date('Y-m-d',strtotime($workspace_next_due_date));
+        $company_next_due_date = Carbon::now()->addDays(30)->toDateTimeString();
+        $this->next_due_date  = date('Y-m-d',strtotime($company_next_due_date));
         $this->save();
     }
 
@@ -125,33 +125,33 @@ class Workspace extends Model
     }
 
     /*** Get Total Hours Of Agents During This Year */
-    public function workspaceHoursReport() 
+    public function companyHoursReport() 
     {
-        $workspace_total_hours = Workspace::find(1)->sessions()->get();
+        $company_total_hours = Company::find(1)->sessions()->get();
 
-        $total_hours = $workspace_total_hours->groupby(function ($session) {
+        $total_hours = $company_total_hours->groupby(function ($session) {
             return Carbon::parse($session->created_at)->format('m');
         });
 
-        $total_hours_report = $workspace_total_hours->groupby(function ($session) {
+        $total_hours_report = $company_total_hours->groupby(function ($session) {
             return Carbon::parse($session->created_at)->format('m');
         })->mapWithKeys(function ($month_report) {
             return ['time' => $month_report->sum('total_session_time')];
         });
 
-        $active_hours_report = $workspace_total_hours->where('status_id',ACTIVE)->groupby(function ($session) {
+        $active_hours_report = $company_total_hours->where('status_id',ACTIVE)->groupby(function ($session) {
             return Carbon::parse($session->created_at)->format('m');
         })->map(function ($month_report) {
             return $month_report->sum('total_session_time');
         })->all();
 
-        $idle_hours_report = $workspace_total_hours->where('status_id',IDLE)->groupby(function ($session) {
+        $idle_hours_report = $company_total_hours->where('status_id',IDLE)->groupby(function ($session) {
             return Carbon::parse($session->created_at)->format('m');
         })->map(function ($month_report) {
             return $month_report->sum('total_session_time');
         })->all();
 
-        $meeting_hours_report = $workspace_total_hours->where('status_id',MEETING)->groupby(function ($session) {
+        $meeting_hours_report = $company_total_hours->where('status_id',MEETING)->groupby(function ($session) {
             return Carbon::parse($session->created_at)->format('m');
         })->map(function ($month_report) {
             return $month_report->sum('total_session_time');

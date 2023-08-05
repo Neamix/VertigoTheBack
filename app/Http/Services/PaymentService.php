@@ -2,7 +2,7 @@
 
 namespace App\Http\Services;
 
-use App\Models\Workspace;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -20,14 +20,14 @@ class PaymentService  {
     }
 
     /**
-     * Get the workspace with stripe id revent to customer send by stripe 
+     * Get the company with stripe id revent to customer send by stripe 
      * 
-     * @return Workspace
+     * @return Company
     */
-    public function getReleventWorkspace() : Workspace
+    public function getReleventCompany() : Company
     {
         $stripe_id = $this->request['data']['object']['customer'];
-        return Workspace::where('stripe_id',$stripe_id)->first();
+        return Company::where('stripe_id',$stripe_id)->first();
     }
 
     public function getCancelDate() 

@@ -27,8 +27,8 @@ final class InviteMemberInputValidator extends Validator
                 $user =  User::where('email',$this->arg('email'))->first();
 
                 if ( $user ) {
-                    if ( $user->companies()->where('workspace_id',Auth::user()->active_workspace_id)->count() ) {
-                        return $fail(__('validation.this_email_address_already_joined_your_workspace'));
+                    if ( $user->companies()->where('company_id',Auth::user()->active_company_id)->count() ) {
+                        return $fail(__('validation.this_email_address_already_joined_your_company'));
                     }
                 }
             }]

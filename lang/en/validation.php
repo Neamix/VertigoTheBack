@@ -154,7 +154,7 @@ return [
     /*** Join Requests */
     'you_need_to_add_password' => "You need to add password",
     'this_email_address_already_has_pending_invitation' => "This email address already has pending invitaion",
-    'this_email_address_already_joined_your_workspace'  => "This email address already joined your workspace",
+    'this_email_address_already_joined_your_company'  => "This email address already joined your company",
 
     /*** Errors */
     'error_occure_code_v100' => "Error Occure Code V100",

@@ -14,7 +14,7 @@ final class UserQuery
         $this->user = $user;
     }
 
-    /*** Filter Users In WorkSpace */
+    /*** Filter Users In Company */
     public function filterUser($_,array $args)
     {
         return User::filter($args)->where('id','!=',Auth::user()->id)->paginate($args['first']);

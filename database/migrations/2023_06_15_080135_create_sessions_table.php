@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('sessions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id');
-            $table->foreignId('workspace_id');
+            $table->foreignId('company_id');
             $table->foreignId('status_id');
             $table->dateTime('start_date');
             $table->dateTime('end_date')->nullable();

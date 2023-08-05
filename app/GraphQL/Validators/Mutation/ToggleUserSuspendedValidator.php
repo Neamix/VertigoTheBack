@@ -17,8 +17,8 @@ final class ToggleUserSuspendedValidator extends Validator
     {
         return [
             'user_id' => ['required',function ($attribute,$value,$fail) {
-                // Get Root User Of Current Workspace
-                $user_exist = Auth::user()->activeWorkspace->users->where('id',$value)->count();
+                // Get Root User Of Current Company
+                $user_exist = Auth::user()->activeCompany->users->where('id',$value)->count();
 
                 if ( ! $user_exist ) {
                     return $fail(__('validation.error_occure_code_v102'));

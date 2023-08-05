@@ -32,7 +32,7 @@ return [
     ],
 
     'stripe' => [
-        'model' => App\Models\Workspace::class,
+        'model' => App\Models\Company::class,
         'secret' => env('STRIPE_SECRET_KEY')
     ]
 

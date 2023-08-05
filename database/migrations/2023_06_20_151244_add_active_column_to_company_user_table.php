@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('workspace_user', function (Blueprint $table) {
+        Schema::table('company_user', function (Blueprint $table) {
             $table->boolean('is_active')->default(0);
         });
     }
@@ -25,8 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('workspace_user', function (Blueprint $table) {
-            if ( Schema::hasColumn('workspace_user','is_active') ) {
+        Schema::table('company_user', function (Blueprint $table) {
+            if ( Schema::hasColumn('company_user','is_active') ) {
                 $table->dropColumn('is_active');
             }
         });

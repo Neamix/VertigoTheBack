@@ -4,7 +4,7 @@ namespace App\GraphQL\Validators;
 
 use Nuwave\Lighthouse\Validation\Validator;
 
-final class WorkspaceRegisterInputValidator extends Validator
+final class CompanyRegisterInputValidator extends Validator
 {
     /**
      * Return the validation rules.
