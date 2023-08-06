@@ -4,35 +4,38 @@ namespace App\GraphQL\Mutations;
 
 use App\Models\Request;
 use App\Models\User;
+use App\Repository\User\UserAuthRepository;
 use Illuminate\Support\Facades\Auth;
 
 final class UserMutation
 {
     protected $user;
     protected $request;
+    protected $userAuthRepository;
 
-    public function __construct(User $user,Request $request)
+    public function __construct(User $user,UserAuthRepository $userAuthRepository,Request $request)
     {
         $this->user = $user;  
         $this->request = $request; 
+        $this->userAuthRepository = $userAuthRepository;
     }
 
     // Authentication Function
     public function loginUser($_, array $args)
     {
-        return $this->user->login($args['input']['email'],$args['input']['password']);
+        return $this->userAuthRepository->login($args['input']['email'],$args['input']['password']);
     }
 
     // Forget Password
     public function forgetPassword($_,array $args)
     {
-        return $this->user->forgetPassword($args['input']['email']);
+        return $this->userAuthRepository->forgetPassword($args['input']['email']);
     }
 
     // Reset Password
     public function resetPassword($_,array $args)
     {
-        return $this->user->resetPassword($args['input']['email'],$args['input']['otp'],$args['input']['verificationID'],$args['input']['password']);
+        return $this->userAuthRepository->resetPassword($args['input']['email'],$args['input']['otp'],$args['input']['verificationID'],$args['input']['password']);
     }   
 
     // Add New Member In Company
