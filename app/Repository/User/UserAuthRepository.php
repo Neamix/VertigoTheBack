@@ -3,6 +3,7 @@
 namespace App\Repository\User;
 
 use App\Models\Otp;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Prettus\Repository\Eloquent\BaseRepository;
@@ -21,13 +22,13 @@ class UserAuthRepository extends BaseRepository {
      * 
     */
 
-    public function login($user) : array
+    public function login($login) : array
     {
         // Get user by his email
-        $user = $this->where('email',$user['email'])->first();
+        $user = $this->where('email',$login['email'])->first();
 
         // Check credintions 
-        if ( ! password_verify($user['password'],$user->password) )
+        if ( ! password_verify($login['password'],$user->password) )
             return ['status' => 'fail','message' => 'Failed to authunticate'];
         
         // Set active company in case no active companu for that user
@@ -37,8 +38,7 @@ class UserAuthRepository extends BaseRepository {
         }
 
         // Return autuntication token 
-        return ['status' => 'success','user' => $user,'token' => $user->createToken()->accessToken];
-
+        return ['status' => 'success','user' => $user,'token' => $user->createToken('login')->accessToken];
     }
 
     /**

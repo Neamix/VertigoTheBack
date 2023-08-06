@@ -5,6 +5,7 @@ namespace App\GraphQL\Mutations;
 use App\Models\Request;
 use App\Models\User;
 use App\Repository\User\UserAuthRepository;
+use App\Repository\User\UserInvitationRepository;
 use Illuminate\Support\Facades\Auth;
 
 final class UserMutation
@@ -12,18 +13,30 @@ final class UserMutation
     protected $user;
     protected $request;
     protected $userAuthRepository;
+    protected $userInvitationRepository;
 
-    public function __construct(User $user,UserAuthRepository $userAuthRepository,Request $request)
+    public function __construct(
+        UserAuthRepository $userAuthRepository,
+        UserInvitationRepository $userInvitationRepository,
+        User $user,
+        Request $request)
     {
         $this->user = $user;  
         $this->request = $request; 
         $this->userAuthRepository = $userAuthRepository;
+        $this->userInvitationRepository = $userInvitationRepository;
     }
 
-    // Authentication Function
+    // Login
     public function loginUser($_, array $args)
     {
-        return $this->userAuthRepository->login($args['input']['email'],$args['input']['password']);
+        return $this->userAuthRepository->login($args['input']);
+    }
+
+    // Logout 
+    public function logout()
+    {
+        return $this->userAuthRepository->logout();
     }
 
     // Forget Password
@@ -36,12 +49,18 @@ final class UserMutation
     public function resetPassword($_,array $args)
     {
         return $this->userAuthRepository->resetPassword($args['input']['email'],$args['input']['otp'],$args['input']['verificationID'],$args['input']['password']);
-    }   
+    }  
 
-    // Add New Member In Company
+    // Invite Member
     public function inviteMember($_,array $args)
     {
-        return Auth::user()->inviteRequest($args['input']);
+        return $this->userInvitationRepository->inviteMember($args['input']);
+    }
+
+    // Accept Invitation 
+    public function acceptInvitation($_,array $args)
+    {
+        return $this->userInvitationRepository->acceptInvitation($args['input']);
     }
 
     // Edit Profile
@@ -62,12 +81,6 @@ final class UserMutation
         return Auth::user()->changeStatus($args);
     }
 
-    // Accept Invitation 
-    public function acceptInvitation($_,array $args)
-    {
-        return $this->user->acceptInvitation($args['input']);
-    }
-
     // Switch Company
     public function switchCompany($_,array $args)
     {
@@ -86,9 +99,4 @@ final class UserMutation
         return Auth::user()->deleteUser($args['user_id']);
     }
 
-    // Logout 
-    public function logout($_,array $args)
-    {
-        return Auth::user()->logout();
-    }
 }
