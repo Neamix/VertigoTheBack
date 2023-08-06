@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Events\MemberSuspend;
 use App\Events\SessionEvent;
 use App\Events\UserStatusEvent;
 use App\Exports\UserMonitoringSheet;
@@ -75,10 +76,10 @@ class User extends Authenticatable
     public function logout()
     {
         Auth::user()->token()->revoke();
-        // return [
-        //     'Status' => 'Success',
-        //     ''
-        // ]
+        
+        return [
+            'status' => 'Success'
+        ];
     }
 
     /*** Send forget email **/
@@ -316,9 +317,16 @@ class User extends Authenticatable
 
         // Reverse Status
         $user->companies()->updateExistingPivot($this->active_company_id,[
-           'is_suspend' => ! $is_suspended
+           'is_suspend' => ! $is_suspended,
         ]);
-    
+
+        // Send notifications
+        event(new MemberSuspend([
+            'user_id'     => $this->id,
+            'status_id'   => $this->status_id,
+            'company_id'  => Auth::user()->active_company_id
+        ]));
+
         return [
             'status'  => "Success",
         ];

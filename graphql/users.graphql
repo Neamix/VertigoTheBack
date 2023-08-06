@@ -22,6 +22,7 @@ extend type Mutation {
     toggleUserSuspended(user_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@toggleUserSuspended") @validator @can(ability: "isRootUser",model:"App\\Models\\User") @guard
     deletePendingRequest(request_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\JoinRequestsMutation@deleteRequest") @can(ability: "isRootUser",model:"App\\Models\\User") @guard
     deleteUser(user_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@deleteUser") @validator @can(ability: "isRootUser",model:"App\\Models\\User") @guard 
+    logout: Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@logout") @guard 
 }
 
 # Types 

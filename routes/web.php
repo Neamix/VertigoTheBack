@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\RequestsController;
 use App\Http\Controllers\WebhookController;
+use App\Mail\DefaultEmail;
 use App\Models\Session;
 use App\Models\User;
 use Carbon\Carbon;
@@ -34,11 +35,9 @@ Route::get('/hash',function () {
 });
 
 Route::get('/test',function () {
-    $sessons =  Session::all()
-    ->groupBy(function($val) {
-        return date('M',strtotime($val->created_at));
-    })->mapWithKeys(function($item,$key) {
-        return [$key => count($item)];
-    });
-    dd($sessons);
+    return new DefaultEmail([
+        'replay_to' => 'abdalrhmanhussin44@gmial.com',
+        'subject'   => 'Test',
+        'view' => 'emails.monitoring.users_exporting'
+    ]);
 });

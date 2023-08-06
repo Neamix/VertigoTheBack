@@ -82,4 +82,10 @@ final class UserMutation
     {
         return Auth::user()->deleteUser($args['user_id']);
     }
+
+    // Logout 
+    public function logout($_,array $args)
+    {
+        return Auth::user()->logout();
+    }
 }
