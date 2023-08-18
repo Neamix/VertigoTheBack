@@ -10,38 +10,28 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
-class MembersEvent
+class MemberSuspend implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /**
-     * Create a new event instance.
-     *
-     * @return void
-     */
-
-    protected $pendingEmail;
-
-    public function __construct(array $pendingEmail)
+    public $user;
+  
+    public function __construct(array $user)
     {
-        $this->pendingEmail = $pendingEmail;
+        $this->user = $user;
     }
-
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return \Illuminate\Broadcasting\Channel|array
-     */
-    public function broadcastOn()
+  
+    public function broadcastOn(): array
     {
         return [
-            new PresenceChannel('company-member.'.Auth::user()->active_company_id),
+            new PresenceChannel('company.'.$this->user['company_id']),
         ];
     }
-
+  
     public function broadcastAs()
     {
-        return 'status';
+        return 'member-suspend-toggle';
     }
 }

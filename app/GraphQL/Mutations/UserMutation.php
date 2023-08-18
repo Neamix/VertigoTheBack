@@ -4,82 +4,79 @@ namespace App\GraphQL\Mutations;
 
 use App\Models\Request;
 use App\Models\User;
+use App\Repository\User\UserActionRepository;
+use App\Repository\User\UserAuthRepository;
+use App\Repository\User\UserInvitationRepository;
 use Illuminate\Support\Facades\Auth;
 
 final class UserMutation
 {
-    protected $user;
-    protected $request;
+    protected $userAuthRepository;
+    protected $userInvitationRepository;
+    protected $userActionsRepository;
 
-    public function __construct(User $user,Request $request)
+    public function __construct(
+        UserAuthRepository $userAuthRepository,
+        UserInvitationRepository $userInvitationRepository,
+        UserActionRepository $userActionRepository)
     {
-        $this->user = $user;  
-        $this->request = $request; 
+        $this->userAuthRepository = $userAuthRepository;
+        $this->userInvitationRepository = $userInvitationRepository;
+        $this->userActionsRepository = $userActionRepository;
     }
 
-    // Authentication Function
+    // Login
     public function loginUser($_, array $args)
     {
-        return $this->user->login($args['input']['email'],$args['input']['password']);
+        return $this->userAuthRepository->login($args['input']);
+    }
+
+    // Logout 
+    public function logout()
+    {
+        return $this->userAuthRepository->logout();
     }
 
     // Forget Password
     public function forgetPassword($_,array $args)
     {
-        return $this->user->forgetPassword($args['input']['email']);
+        return $this->userAuthRepository->forgetPassword($args['input']['email']);
     }
 
     // Reset Password
     public function resetPassword($_,array $args)
     {
-        return $this->user->resetPassword($args['input']['email'],$args['input']['otp'],$args['input']['verificationID'],$args['input']['password']);
-    }   
+        return $this->userAuthRepository->resetPassword($args['input']['email'],$args['input']['otp'],$args['input']['verificationID'],$args['input']['password']);
+    }  
 
-    // Add New Member In Company
+    // Invite Member
     public function inviteMember($_,array $args)
     {
-        return Auth::user()->inviteRequest($args['input']);
-    }
-
-    // Edit Profile
-    public  function profileEdit($_,array $args)
-    {
-        return Auth::user()->updateProfile($args['input']);
-    }
-
-    // Change Email
-    public function changEmail($_,array $args)
-    {
-        return $this->request->changEmail($args['email']);
-    }
-
-    // Status Functions
-    public  function changeStatus($_,array $args)
-    {
-        return Auth::user()->changeStatus($args);
+        return $this->userInvitationRepository->inviteMember($args['input']);
     }
 
     // Accept Invitation 
     public function acceptInvitation($_,array $args)
     {
-        return $this->user->acceptInvitation($args['input']);
+        return $this->userInvitationRepository->acceptInvitation($args['input']);
     }
 
     // Switch Company
     public function switchCompany($_,array $args)
     {
-        return Auth::user()->switchCompany($args);
+        return $this->userActionsRepository->switchCompany($args);
     }
 
     // Toggle Suspended User 
     public function toggleUserSuspended($_,array $args)
     {
-        return Auth::user()->toggleUserSuspended($args['user_id']);
+        return $this->userActionsRepository->toggleUserSuspended($args['user_id']);
     }
 
     // Delete User
     public function deleteUser($_,array $args)
     {
-        return Auth::user()->deleteUser($args['user_id']);
+        return $this->userActionsRepository->deleteUser($args['user_id']);
     }
+
 }

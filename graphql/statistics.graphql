@@ -1,16 +1,10 @@
 extend type Query {
-    dashboard: User
+    dashboard: User,
+    userStatistics: UserStatistics @field(resolver: "App\\GraphQL\\Query\\UserQuery@userStatistics") @authorized
 } 
 
-type statistics {
-    users_statistics: UserStatistics
-    users_chart: [Int]
-}
-
 type UserStatistics {
-    total_members: Int
-    active_members: Int
+    total_members: Int,
+    active_now: Int,
     suspended_members: Int
-    deleted_members: Int
-    offline_members: Int
 }

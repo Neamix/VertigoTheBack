@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\RequestsController;
 use App\Http\Controllers\WebhookController;
+use App\Mail\DefaultEmail;
 use App\Models\Session;
 use App\Models\User;
 use Carbon\Carbon;
@@ -34,11 +35,38 @@ Route::get('/hash',function () {
 });
 
 Route::get('/test',function () {
-    $sessons =  Session::all()
-    ->groupBy(function($val) {
-        return date('M',strtotime($val->created_at));
-    })->mapWithKeys(function($item,$key) {
+    $sessions = Session::where('company_id',1)->get(['total_session_time','start_date']);
+
+    // Get total session
+    $totalSessions = $sessions->groupBy(function($session) {
+        return date('M',strtotime($session->start_date));
+    });
+    dd($totalSessions);
+    // Get active session statistics
+    $activeSessions = $sessions->where('status_id',ACTIVE)->groupBy(function($session) {
+        return date('M',strtotime($session->created_at));
+    })->mapWithKeys(function ($item,$key) {
         return [$key => count($item)];
     });
-    dd($sessons);
+
+    // Get Busy sessions statistics
+    $idleSession = $sessions->where('status_id',IDLE)->groupBy(function($session) {
+        return date('M',strtotime($session->created_at));
+    })->mapWithKeys(function ($item,$key) {
+        return [$key => count($item)];
+    });
+
+    // Get meeting sessions statistics
+    $meetingSession = $sessions->where('status_id',MEETING)->groupBy(function($session) {
+        return date('M',strtotime($session->created_at));
+    })->mapWithKeys(function ($item,$key) {
+        return [$key => count($item)];
+    });
+
+    dd([
+        'total_sessions'   => $totalSessions,
+        'active_sessions'  => $activeSessions,
+        'idle_sessions'    => $idleSession,
+        'meeting_sessions' => $meetingSession
+    ]);
 });

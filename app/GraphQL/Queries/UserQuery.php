@@ -36,4 +36,9 @@ final class UserQuery
     {
         return $this->user->pendingEmails($args);
     }
+
+    /** User get statistics */
+    public function userStatistics()  {
+        return $this->userRepository->statistics();
+    }
 }

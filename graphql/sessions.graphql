@@ -1,14 +1,20 @@
 extend type Query {
-    sessions:  [Session] @field(resolver: "App\\GraphQL\\Queries\\SessionQuery@getSessions") @authorized
+    sessions:  [Session] @field(resolver: "App\\GraphQL\\Queries\\SessionQuery@getAllSessions") @authorized
+}
+
+extend type Mutation {
+    opensession: Session @field(resolver: "App\\GraphQL\\Mutations\\SessionMutation@openSession") @authorized
+    closesession: Session @field(resolver: "App\\GraphQL\\Mutations\\SessionMutation@closeSession") @authorized
 }
 
 type Session {
+    id: ID,
     company: Company @belongsTo,
     user: User @belongsTo,
     total_session_time: String,
     status_id: ID,
     status: Status @belongsTo,
-    start_date: DateTime,
-    end_date: DateTime,
+    start_date: String,
+    end_date: String,
     created_month: String
 }
