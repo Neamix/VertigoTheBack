@@ -9,6 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UserStatusEvent implements ShouldBroadcast
 {
@@ -23,8 +24,9 @@ class UserStatusEvent implements ShouldBroadcast
   
     public function broadcastOn(): array
     {
+        Log::info($this->user);
         return [
-            new PresenceChannel('company.'.Auth::user()->active_company_id),
+            new PresenceChannel('company.'.$this->user['company_id']),
         ];
     }
   

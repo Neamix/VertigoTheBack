@@ -3,18 +3,19 @@
 namespace App\GraphQL\Queries;
 
 use App\Models\Session;
+use App\Repository\Session\SessionRepository;
 
 final class SessionQuery
 {
-    public $session;
+    protected $sessionRepository;
 
-    public function __construct(Session $session)
+    public function __construct(SessionRepository $sessionRepository)
     {
-        $this->session = $session;
+        $this->sessionRepository = $sessionRepository;
     }
 
-    public function getSessions($_,array $args)
+    public function getAllSessions($_,array $args)
     {
-        return $this->session->getAllSessions();
+        return $this->sessionRepository->getAllSessions();
     }
 }
