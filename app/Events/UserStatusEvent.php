@@ -24,7 +24,6 @@ class UserStatusEvent implements ShouldBroadcast
   
     public function broadcastOn(): array
     {
-        Log::info($this->user);
         return [
             new PresenceChannel('company.'.$this->user['company_id']),
         ];
