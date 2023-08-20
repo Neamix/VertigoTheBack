@@ -22,9 +22,24 @@ class MemberSuspend implements ShouldBroadcast
     {
         $this->user = $user;
     }
+
+    /**
+     * Get the data to broadcast.
+     *
+     * @return array<string, mixed>
+    */
+    public function broadcastWith(): array
+    {
+        return [
+            'user_id' => $this->user['user_id'],
+            'event'   => $this->user['event']
+        ];
+    }
+
   
     public function broadcastOn(): array
     {
+        Log::info($this->user);
         return [
             new PresenceChannel('company.'.$this->user['company_id']),
         ];
@@ -32,6 +47,6 @@ class MemberSuspend implements ShouldBroadcast
   
     public function broadcastAs()
     {
-        return 'member-suspend-toggle';
+        return 'member-suspend';
     }
 }

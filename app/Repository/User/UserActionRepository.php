@@ -41,7 +41,7 @@ class UserActionRepository extends BaseRepository {
     {
         // Get user under action
         $user = User::where([
-        'id' => $user_id
+            'id' => $user_id
         ])->first();
          
          // Get user status
@@ -55,8 +55,8 @@ class UserActionRepository extends BaseRepository {
         // Send notifications
         event(new MemberSuspend([
             'user_id'     => $user->id,
-            'status_id'   => $user->status_id,
-            'company_id'  => Auth::user()->active_company_id
+            'company_id'  => Auth::user()->active_company_id,
+            'event'       => ($user->is_suspend) ? 'member-suspend' : 'member-unsuspend'
         ]));
 
         // Return response
