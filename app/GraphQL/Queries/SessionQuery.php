@@ -18,4 +18,9 @@ final class SessionQuery
     {
         return $this->sessionRepository->getAllSessions();
     }
+
+    public function getSessionsReport($_,array $args)
+    {
+        return $this->sessionRepository->getSessionsReport();
+    }
 }

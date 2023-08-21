@@ -15,18 +15,31 @@ class UserStatusEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $user;
+    public $status;
   
-    public function __construct(array $user)
+    public function __construct(array $status)
     {
-        $this->user = $user;
+        $this->status = $status;
+    }
+
+    public function broadCastWith(): array 
+    {
+        return [
+            'user_id'      => $this->status['user_id'],
+            'company_id'   => $this->status['company_id'],
+            'status_id'    => $this->status['status_id'],
+            'session'      => [
+                'id' => $this->status['session']['id'],
+                'start_date' => $this->status['session']['start_date']
+            ]
+        ];
     }
   
     public function broadcastOn(): array
     {
-        Log::info($this->user);
         return [
-            new PresenceChannel('company.'.$this->user['company_id']),
+            new PresenceChannel('company.'.$this->status['company_id']),
+            new PresenceChannel('member.'.$this->status['user_id']),
         ];
     }
   

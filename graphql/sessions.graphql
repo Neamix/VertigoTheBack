@@ -1,9 +1,10 @@
 extend type Query {
     sessions:  [Session] @field(resolver: "App\\GraphQL\\Queries\\SessionQuery@getAllSessions") @authorized
+    sessionStatistics: SessionStatistics @field(resolver: "App\\GraphQL\\Queries\\SessionQuery@getSessionsReport") @authorized @can(ability: "isRootUser",model: "App\\Models\\User")
 }
 
 extend type Mutation {
-    opensession: Session @field(resolver: "App\\GraphQL\\Mutations\\SessionMutation@openSession") @authorized
+    opensession: Session @field(resolver: "App\\GraphQL\\Mutations\\SessionMutation@openSession") @authorized 
     closesession: Session @field(resolver: "App\\GraphQL\\Mutations\\SessionMutation@closeSession") @authorized
 }
 
@@ -17,4 +18,27 @@ type Session {
     start_date: String,
     end_date: String,
     created_month: String
+}
+
+type SessionStatistics {
+    total_hours: Months,
+    active_hours: Months,
+    meeting_hours: Months,
+    idle_hours: Months,
+    total_sessions_count: Int
+}
+
+type Months {
+    Jan: Int,
+    Feb: Int,
+    Mar: Int,
+    Apr: Int,
+    May: Int,
+    Jun: Int,
+    Jul: Int,
+    Aug: Int,
+    Sep: Int,
+    Oct: Int,
+    Nov: Int,
+    Dec: Int
 }

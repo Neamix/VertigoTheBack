@@ -2,14 +2,24 @@
 
 namespace App\Repository\User;
 
+use App\Events\MemberAddedEvent;
 use App\Models\Company;
 use App\Models\JoinRequest;
 use App\Models\User;
+use App\Services\MailerService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Prettus\Repository\Eloquent\BaseRepository;
 
 class UserInvitationRepository extends BaseRepository {
+    use MailerService;
+
+    protected $userAuthRepository;
+
+    public function __construct(UserAuthRepository $userAuthRepository)
+    {
+        $this->userAuthRepository = $userAuthRepository;
+    }
 
     public function model()
     {
@@ -50,6 +60,27 @@ class UserInvitationRepository extends BaseRepository {
         ];
     }
 
+    /**
+     * Render Invitation New Member 
+     * @param invitaion Info
+    */
+    public static function renderInvitation($invitation)
+    {
+        $user = User::firstOrCreate([
+            'email' => $invitation['email']
+        ],[
+            'email' => $invitation['email']
+        ]);
+
+        if ( $user->password ) {
+            $user->acceptInvitation($invitation);
+        }
+
+        return [
+            'type' => $user->password  ? 'existuser' : 'newuser'
+        ];
+    }
+
     /** 
      * Accept invitation 
      * @param member Member info 
@@ -60,12 +91,12 @@ class UserInvitationRepository extends BaseRepository {
         // Save invitation request
         $joinRequest = JoinRequest::where('email',$member['email'])->first();
 
-        // Get user by email address
-        $user = self::where('email',$member['email'])->first();
+        // Create user if not exist before
+        $user = User::where('email',$member['email'])->first();
 
         // Attach User To The New Company
-        $user->companies()->attach($joinRequest['company_id']);
-
+        $user->companies()->attach([$joinRequest['company_id'] => ['created_at' => date('Y-m-d',strtotime('Today'))]]);
+        
         // Get The Requested Company
         $company = $joinRequest->company()->first(['name','id']);
         
@@ -83,10 +114,15 @@ class UserInvitationRepository extends BaseRepository {
         $user->active_company_id = $company->id;
         $user->save();
 
+        // Send Pusher Notification
+        event(new MemberAddedEvent([
+            'user_id' => 2,
+            'company_id' => 1,
+            'acceptance_month' => date('M',strtotime('Today'))
+        ]));
+        
         // Authunticate User
-        if ( isset($member["password"]) ) {
-            return  $this->login($user->email,$member["password"]);
-        }
+        return  $this->userAuthRepository->login(['email' => $user->email,'password' => $member["password"]]);
     }
 
 }

@@ -25,7 +25,7 @@ class UserAuthRepository extends BaseRepository {
     public function login($login) : array
     {
         // Get user by his email
-        $user = $this->where('email',$login['email'])->first();
+        $user = User::where('email',$login['email'])->first();
 
         // Check credintions 
         if ( ! password_verify($login['password'],$user->password) )

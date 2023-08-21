@@ -17,7 +17,7 @@ final class UserInvitationInputValidator extends Validator
     public function rules(): array
     {
         return [
-            'email'    => ['required','email','exists:users,email'],
+            'email'    => ['required','email','exists:users,email','exists:join_requests,email'],
             'token' => ['required',function ($attribute,$value,$fail) {
                 $request = JoinRequest::where('email',$this->arg('email'))->first();
                 // Check The Verification ID
@@ -30,7 +30,7 @@ final class UserInvitationInputValidator extends Validator
 
                 // If User Has No Password And No Password Has Been Send From Front
                 // Return Error
-                if ( ! $user->passwornd && !$value ) {
+                if ( ! $user->password && !$value ) {
                     return $fail(__('validation.please_add_your_password'));
                 }
             }]
