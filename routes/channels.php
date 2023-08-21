@@ -16,22 +16,16 @@ use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('company.{company_id}', function ($user,$company_id) {
     if ( $user->active_company_id == $company_id ) {
-        return ['user_id' => $user->id,'company_id' => $company_id];
+        return ['user_id' => $user->id,'company_id' => $company_id,'status_id' => $user->status_id];
     }
 
     return false;
 });
 
-Broadcast::channel('company-members.{company_id}', function ($user,$company_id) {
-    if ( $user->active_company_id == $company_id ) {
-        return ['user_id' => $user->id,'company_id' => $company_id];
-    }
+Broadcast::channel('member.{user_id}', function ($user,$company_id) {
 
+    if ( Auth::user()->id == $user->id )
+        return ['user_id' => $user->id,'company_id' => $company_id,'status_id' => $user->status_id];
+    
     return false;
-});
-
-
-
-Broadcast::channel('company-session-{company_id}', function ($company_id,$total_session_time) {
-    return ['company_id' => $company_id,'total_session_time' => $total_session_time];
 });

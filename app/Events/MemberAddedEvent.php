@@ -9,16 +9,21 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class MemberSuspend implements ShouldBroadcast
+class MemberAddedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $user;
-  
-    public function __construct(array $user)
+    /**
+     * Create a new event instance.
+     *
+     * @return void
+     */
+
+    protected $user;
+
+    public function __construct($user)
     {
         $this->user = $user;
     }
@@ -32,20 +37,25 @@ class MemberSuspend implements ShouldBroadcast
     {
         return [
             'user_id' => $this->user['user_id'],
-            'event'   => $this->user['event']
+            'month'   => $this->user['acceptance_month']
         ];
     }
 
-  
-    public function broadcastOn(): array
+    /**
+     * Get the channels the event should broadcast on.
+     *
+     * @return \Illuminate\Broadcasting\Channel|array
+     */
+    public function broadcastOn()
     {
+        Log::info($this->user);
         return [
             new PresenceChannel('company.'.$this->user['company_id']),
         ];
     }
-  
+
     public function broadcastAs()
     {
-        return 'member-suspend';
+        return 'new-member';
     }
 }

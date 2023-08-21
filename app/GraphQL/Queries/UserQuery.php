@@ -3,15 +3,18 @@
 namespace App\GraphQL\Queries;
 
 use App\Models\User;
+use App\Repository\User\UserStatisticsRepository;
 use Illuminate\Support\Facades\Auth;
 
 final class UserQuery
 {
     protected $user;
+    protected $userStatisticsRepository;
 
-    public function __construct(User $user)
+    public function __construct(User $user,UserStatisticsRepository $userStatisticsRepository)
     {
         $this->user = $user;
+        $this->userStatisticsRepository = $userStatisticsRepository;
     }
 
     /*** Filter Users In Company */
@@ -38,7 +41,7 @@ final class UserQuery
     }
 
     /** User get statistics */
-    public function userStatistics()  {
-        return $this->userRepository->statistics();
+    public function getMembersReport()  {
+        return $this->userStatisticsRepository->getMembersReports();
     }
 }

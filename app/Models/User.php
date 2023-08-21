@@ -4,23 +4,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use App\Events\MemberSuspend;
-use App\Events\SessionEvent;
-use App\Events\UserStatusEvent;
-use App\Exports\UserMonitoringSheet;
 use App\Services\MailerService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-
 use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
+
 
 class User extends Authenticatable
 {

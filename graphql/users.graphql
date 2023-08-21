@@ -5,8 +5,9 @@ extend type Query {
     users(input: UserFilterInput): [User] @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\UserQuery@filterUser") @authorized
     checkOtp(input: UserOtp): UserResetResponse @field(resolver:"App\\GraphQL\\Queries\\UserQuery@checkOtp")
     me: User @auth
-    exportMonitoringSheet(input: ExportingUser): ExportResponse @field(resolver: "App\\GraphQL\\Queries\\UserQuery@exportMonitoringSheet")
+    exportMonitoringSheet(input: ExportingUser): ExportResponse @field(resolver: "App\\GraphQL\\Queries\\UserQuery@exportMonitoringSheet") @can(ability: "isRootUser",model: "App\\Models\\User")
     pendingMembers: [PendingEmails] @field(resolver: "App\\GraphQL\\Queries\\JoinRequestQuery@pendingRequests") @can(ability: "isRootUser",model: "App\\Models\\User") @guard
+    memberStatistics: MemberStatistics @field(resolver: "App\\GraphQL\\Queries\\UserQuery@getMembersReport") @can(ability: "isRootUser",model: "App\\Models\\User") @guard
 }
 
 # Mutation
@@ -16,7 +17,7 @@ extend type Mutation {
     resetPassword(input: UserResetPasswordInput): LoginResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@resetPassword")
     acceptInvitation(input: UserInvitationInput): LoginResponse @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@acceptInvitation")
     profile(input: UserProfileInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@profileEdit") @guard
-    inviteMember(input: inviteMemberInput): PendingEmails @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@inviteMember") @guard 
+    inviteMember(input: inviteMemberInput): PendingEmails @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@inviteMember") @guard @can(ability: "isRootUser",model: "App\\Models\\User")
     switchCompany(companyid: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@switchCompany") @guard @validator
     toggleUserSuspended(user_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@toggleUserSuspended") @validator @can(ability: "isRootUser",model:"App\\Models\\User") @guard
     deletePendingRequest(request_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\JoinRequestsMutation@deleteRequest") @can(ability: "isRootUser",model:"App\\Models\\User") @guard
@@ -71,6 +72,12 @@ type ExportResponse {
 type PendingEmails {
     email: String,
     id: Int
+}
+
+type MemberStatistics {
+    total_members: Int,
+    total_suspended_members: Int,
+    total_members_monthly_report: Months,
 }
 
 # Inputs 
@@ -137,3 +144,4 @@ input ExportingUser {
     filters: UserFilterInput,
     duration: Int
 }
+

@@ -38,8 +38,13 @@ class StatusRepository extends BaseRepository{
 
         // Send status notification
         event(new UserStatusEvent([
-            'user_id' => Auth::user()->id,
+            'user_id'      => Auth::user()->id,
+            'company_id'   => Auth::user()->active_company_id,
             'status_id'    => $status_id,
+            'session'      => [
+                'id' => $session->id,
+                'start_date' => $session->start_date
+            ]
         ]));
 
         // Return response

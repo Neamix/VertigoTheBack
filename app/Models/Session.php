@@ -18,4 +18,10 @@ class Session extends Model
     {
         return date('M',strtotime($this->start_date));
     }
+
+    /*** Get hours report for company */
+    static function hoursReport()
+    {
+        
+    }
 }
