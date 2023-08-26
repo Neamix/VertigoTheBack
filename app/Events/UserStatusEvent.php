@@ -39,7 +39,6 @@ class UserStatusEvent implements ShouldBroadcast
     {
         return [
             new PresenceChannel('company.'.$this->status['company_id']),
-            new PresenceChannel('member.'.$this->status['user_id']),
         ];
     }
   
