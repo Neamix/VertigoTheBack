@@ -35,9 +35,13 @@ class SessionRepository extends BaseRepository{
 
         // Send status notification
         event(new UserStatusEvent([
-            'user_id'    => Auth::user()->id,
-            'status_id'  => Auth::user()->status_id,
-            'company_id' => Auth::user()->active_company_id
+            'user_id'      => Auth::user()->id,
+            'company_id'   => Auth::user()->active_company_id,
+            'status_id'    => $session->status_id,
+            'session'      => [
+                'id' => $session->id,
+                'start_date' => $session->start_date
+            ]
         ]));
 
         return $session;

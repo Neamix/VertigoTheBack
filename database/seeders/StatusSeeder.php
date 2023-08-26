@@ -29,5 +29,10 @@ class StatusSeeder extends Seeder
             'id' => 3,
             'name' => 'Do not disturb'
         ]);
+
+        Status::firstOrCreate([
+            'id' => 4,
+            'name' => 'Offline'
+        ]);
     }
 }
