@@ -5,6 +5,7 @@ namespace App\Repository\Session;
 use App\Events\SessionEvent;
 use App\Events\UserStatusEvent;
 use App\Models\Session;
+use App\Models\User;
 use App\Repository\Status\StatusRepository;
 use Illuminate\Support\Facades\Auth;
 use Prettus\Repository\Eloquent\BaseRepository;
@@ -37,7 +38,7 @@ class SessionRepository extends BaseRepository{
         event(new UserStatusEvent([
             'user_id'      => Auth::user()->id,
             'company_id'   => Auth::user()->active_company_id,
-            'status_id'    => $session->status_id,
+            'status'    => $session->status_id,
             'session'      => [
                 'id' => $session->id,
                 'start_date' => $session->start_date
@@ -47,6 +48,20 @@ class SessionRepository extends BaseRepository{
         return $session;
     }
 
+    /*** Terminate all seasons for user */
+    public function terminateAllSeasons($user_id)
+    {
+        // Find user
+        $user = User::find($user_id);
+
+        // Change status to offline (null)
+        $user->status_id = null;
+        $user->save();
+
+        // Terminate sessions
+        $user->session()->where('end_date',null)->update(['end_date' => date('Y-m-d H:i:s')]);
+    }
+
     /** Close session for auth user */
     public function closeSession()
     {
@@ -54,10 +69,16 @@ class SessionRepository extends BaseRepository{
         $session = Auth::user()->session()->where('end_date',null)->where('company_id', Auth::user()->active_company_id)->orderBy('id','DESC')->first();
         
         if ( $session ) {
+            // Terminate session if exist
             $session->end_date =  date('Y-m-d H:i:s');
             $session->total_session_time = strtotime($session->end_date) - strtotime($session->start_date);
             $session->save();
 
+            // Set status id of user to null
+            Auth::user()->status_id = null;
+            Auth::user()->save();
+            
+            // Send terminate event to all
             event(new SessionEvent([
                 'total_session_time' => $session->total_session_time,
                 'status_id'  => $session->status_id,
@@ -88,9 +109,11 @@ class SessionRepository extends BaseRepository{
             return date('M',strtotime($session->end_date));
         })->mapWithKeys(function($items,$key) {
             $achieved_time = 0;
+
             foreach ( $items as $item ) {
                 $achieved_time += $item->total_session_time;
             }
+
             return [$key => $achieved_time];     
         })->all();
 
@@ -99,9 +122,11 @@ class SessionRepository extends BaseRepository{
             return date('M',strtotime($session->end_date));
         })->mapWithKeys(function($items,$key) {
             $achieved_time = 0;
+
             foreach ( $items as $item ) {
                 $achieved_time += $item->total_session_time;
             }
+
             return [$key => $achieved_time];
         })->all();
 
@@ -110,9 +135,11 @@ class SessionRepository extends BaseRepository{
             return date('M',strtotime($session->end_date));
         })->mapWithKeys(function($items,$key) {
             $achieved_time = 0;
+
             foreach ( $items as $item ) {
                 $achieved_time += $item->total_session_time;
             }
+
             return [$key => $achieved_time];
         })->all();
 
@@ -121,9 +148,11 @@ class SessionRepository extends BaseRepository{
             return date('M',strtotime($session->end_date));
         })->mapWithKeys(function($items,$key) {
             $achieved_time = 0;
+
             foreach ( $items as $item ) {
                 $achieved_time += $item->total_session_time;
             }
+
             return [$key => $achieved_time];    
         })->all();
 
