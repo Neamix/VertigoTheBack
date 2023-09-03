@@ -2,17 +2,28 @@
 
 namespace App\Repository\User;
 
+use App\Events\AuthEvent;
 use App\Models\Otp;
 use App\Models\User;
+use App\Repository\Session\SessionRepository;
+use App\Services\MailerService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Prettus\Repository\Eloquent\BaseRepository;
 
 class UserAuthRepository extends BaseRepository {
+    use MailerService;
+    
+    protected $sessionRepository;
 
     public function model()
     {
         return User::class;
+    }
+
+    public function __construct(SessionRepository $sessionRepository)
+    {
+        $this->sessionRepository = $sessionRepository;
     }
 
     /**
@@ -30,6 +41,17 @@ class UserAuthRepository extends BaseRepository {
         // Check credintions 
         if ( ! password_verify($login['password'],$user->password) )
             return ['status' => 'fail','message' => 'Failed to authunticate'];
+
+        // Logout from other devices
+        $user->logoutFromAllDevices();
+        
+        // Terminate all seasons
+        $this->sessionRepository->terminateAllSeasons($user->id);
+
+        // Send logout event to all devices
+        event(new AuthEvent([
+            'user_id' => Auth::id()
+        ]));
         
         // Set active company in case no active companu for that user
         if ( ! $user->active_company_id ) {
@@ -50,9 +72,10 @@ class UserAuthRepository extends BaseRepository {
     public function forgetPassword(string $email) : string
     {
         // Get Relevent User
-        $user = $this->where('email',$email)->first();
+        $user = User::where('email',$email)->first();
+        // Get Otp
         $otp = Otp::generateOtp($user,'password_reset');
- 
+
         // Send Forget Email
         $this->forgetPasswordMail(['name'  => $user->name,'to_email' => $user->email,'otp'   => $otp['otp']]);
          
@@ -68,7 +91,7 @@ class UserAuthRepository extends BaseRepository {
     public function resetPassword($user) : array
     {
         // Get user by email
-        $user = $this->where('email',$user['email'])->first();
+        $user = User::where('email',$user['email'])->first();
 
         // Get otp
         $otp = Otp::where(['user_id' => $user->id,'otp' => $user['otp'],'type'  => 'password_reset'])->first();
@@ -92,7 +115,12 @@ class UserAuthRepository extends BaseRepository {
 
     public function logout() : array
     {
-        Auth::user()->token()->revoke();
+        // Terminate tokens
+        Auth::user()->logoutFromAllDevices();
+
+        // Terminate Session
+        $this->sessionRepository->closeSession();
+        
         return ['status' => 'success'];
     }
 

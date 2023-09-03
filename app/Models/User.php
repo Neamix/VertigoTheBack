@@ -52,6 +52,18 @@ class User extends Authenticatable
         return $query;
     }
 
+    // Actions
+
+    /*** Terminate all tokens for user */
+    public function logoutFromAllDevices() {
+        $userTokens = $this->tokens;
+
+        foreach ($userTokens as $token) {
+            $token->delete();
+        }   
+    }
+
+
     // Attributes
 
     /*** Get Total Members */
