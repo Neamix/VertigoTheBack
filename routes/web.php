@@ -32,14 +32,7 @@ Route::post('pusher/webhook',[WebhookController::class,'handlePusherEvent']);
 // Accept Invitation
 Route::get('accept/invitation',[RequestsController::class,'handleInvitationRequest'])->middleware('accept.invitation');
 
-Route::get('/hash',function () {
-    dd(bcrypt('password'));
-});
 
 Route::get('/test',function () {
-    $user = Company::find(1);
-
-    $paymentMethod = $user->defaultPaymentMethod();
-    $user->charge(2000,$paymentMethod->id);
 
 });

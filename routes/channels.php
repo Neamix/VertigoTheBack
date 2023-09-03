@@ -23,7 +23,6 @@ Broadcast::channel('company.{company_id}', function ($user,$company_id) {
 });
 
 Broadcast::channel('member.{user_id}', function ($user,$company_id) {
-
     if ( Auth::user()->id == $user->id )
         return ['user_id' => $user->id,'company_id' => $company_id,'status_id' => $user->status_id];
     
