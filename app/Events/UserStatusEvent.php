@@ -29,7 +29,7 @@ class UserStatusEvent implements ShouldBroadcast
             'company_id'   => $this->status['company_id'],
             'status_id'    => $this->status['status_id'],
             'session'      => [
-                'id' => $this->status['session']['id'],
+                'id'         => $this->status['session']['id'],
                 'start_date' => $this->status['session']['start_date']
             ]
         ];
@@ -39,7 +39,6 @@ class UserStatusEvent implements ShouldBroadcast
     {
         return [
             new PresenceChannel('company.'.$this->status['company_id']),
-            new PresenceChannel('member.'.$this->status['user_id']),
         ];
     }
   
