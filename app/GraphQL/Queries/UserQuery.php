@@ -3,6 +3,7 @@
 namespace App\GraphQL\Queries;
 
 use App\Models\User;
+use App\Repository\User\UserAuthRepository;
 use App\Repository\User\UserStatisticsRepository;
 use Illuminate\Support\Facades\Auth;
 
@@ -10,11 +11,13 @@ final class UserQuery
 {
     protected $user;
     protected $userStatisticsRepository;
+    protected $userAuthRepository;
 
-    public function __construct(User $user,UserStatisticsRepository $userStatisticsRepository)
+    public function __construct(User $user,UserStatisticsRepository $userStatisticsRepository,UserAuthRepository $userAuthRepository)
     {
         $this->user = $user;
         $this->userStatisticsRepository = $userStatisticsRepository;
+        $this->userAuthRepository  = $userAuthRepository;
     }
 
     /*** Filter Users In Company */
@@ -26,7 +29,7 @@ final class UserQuery
     /*** Check Oto */
     public function checkOtp($_,array $args) 
     {
-        return User::checkOtp($args['input']['otp'],$args['input']['email']);
+        return $this->userAuthRepository->checkOtp($args['input']['otp'],$args['input']['email']);
     }
 
     /*** Exporting Monitoring Sheet  */
