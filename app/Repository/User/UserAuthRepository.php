@@ -4,11 +4,19 @@ namespace App\Repository\User;
 
 use App\Models\Otp;
 use App\Models\User;
+use App\Repository\Session\SessionRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Prettus\Repository\Eloquent\BaseRepository;
 
 class UserAuthRepository extends BaseRepository {
+
+    protected $sessionRepository;
+
+    public function __construct(SessionRepository $sessionRepository)
+    {
+        $this->sessionRepository = $sessionRepository;
+    }
 
     public function model()
     {
@@ -50,7 +58,7 @@ class UserAuthRepository extends BaseRepository {
     public function forgetPassword(string $email) : string
     {
         // Get Relevent User
-        $user = $this->where('email',$email)->first();
+        $user = Otp::where('email',$email)->first();
         $otp = Otp::generateOtp($user,'password_reset');
  
         // Send Forget Email
@@ -60,29 +68,49 @@ class UserAuthRepository extends BaseRepository {
     }
 
     /**
+     * Check otp
+     * @param otp 
+     * @param email 
+     * @return array
+    */
+
+    public function checkOtp(string $otp,string $email) 
+    {
+        // Get Relevent User & otp
+        $user = User::where('email',$email)->first();
+        $otp  = $user->otp->where('otp',$otp)->first();
+
+        // Send Status
+        return ($otp) ? ['status' => 'Success'] : ['status' => 'Failed'];
+    }
+
+    /**
      * Reset password
      * @param user user reset data
      * @return array
     */
 
-    public function resetPassword($user) : array
+    public function resetPassword($email,$userOtp,$verficationID,$password) : array
     {
         // Get user by email
-        $user = $this->where('email',$user['email'])->first();
+        $user = Otp::where('email',$email)->first();
 
         // Get otp
-        $otp = Otp::where(['user_id' => $user->id,'otp' => $user['otp'],'type'  => 'password_reset'])->first();
+        $otp = Otp::where(['user_id' => $user->id,'otp' => $userOtp,'type'  => 'password_reset'])->first();
 
         // Check otp
-        if ( ! password_verify($user['verification_id'],$otp->verification_id) ) 
+        if ( ! password_verify($verficationID,$otp->verification_id) ) 
             return ['status' => "Fail"];
 
         // Change user password
-        $user->password = Hash::make($user['password']);
+        $user->password = Hash::make($password);
         $user->save();
 
+        // Remove otp
+        $otp->delete();
+
         // Return Response
-        return ['status' => "Success",'token'  => $this->login($user['email'],$user['password'])['token']];
+        return ['status' => "Success",'token'  => $this->login(['email' => $email,'password' => $password])['token']];
     }
 
     /**
@@ -92,6 +120,7 @@ class UserAuthRepository extends BaseRepository {
 
     public function logout() : array
     {
+        $this->sessionRepository->closeSession();
         Auth::user()->token()->revoke();
         return ['status' => 'success'];
     }
