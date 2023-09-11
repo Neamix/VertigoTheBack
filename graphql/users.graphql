@@ -31,6 +31,7 @@ type User {
     email: String,
     name:  String,
     token: String,
+    status_id: Int,
     status: Status @belongsTo,
     active_company_id: ID,
     accessable_companies: [Company],
