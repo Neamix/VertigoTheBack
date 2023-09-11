@@ -1,0 +1,31 @@
+extend type Query {
+    
+}
+
+extend type Mutation {
+    
+}
+
+type Project {
+    id: ID,
+    name: String,
+    description: String,
+    input: Input @hasMany,
+    members: User @belongToMany
+}
+
+type Input {
+    id: ID,
+    sort: Int,
+    type: String,
+    label: String,
+    searchable: Boolean,
+    viewlatest: Boolean,
+    options: Option @hasMany
+}
+
+type Option {
+    id: ID,
+    sort: Int,
+    value: String
+}
