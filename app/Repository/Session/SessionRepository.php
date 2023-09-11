@@ -6,10 +6,18 @@ use App\Events\SessionEvent;
 use App\Events\UserStatusEvent;
 use App\Models\Session;
 use App\Repository\Status\StatusRepository;
+use App\Repository\User\UserActionRepository;
 use Illuminate\Support\Facades\Auth;
 use Prettus\Repository\Eloquent\BaseRepository;
 
 class SessionRepository extends BaseRepository{
+
+    protected $statusRepository;
+
+    public function __construct(StatusRepository $statusRepository)
+    {
+        $this->statusRepository = $statusRepository;
+    }
 
     public function model()
     {
@@ -17,7 +25,7 @@ class SessionRepository extends BaseRepository{
     }
 
     /** Open new session for auth user */
-    public function openSession()
+    public function openSession($status_id = ACTIVE)
     {
         // Terminate any session for auth user
         $this->closeSession();
@@ -25,20 +33,12 @@ class SessionRepository extends BaseRepository{
         // Create new session for auth user
         $session = Auth::user()->session()->create([
             'company_id' => Auth::user()->active_company_id,  
-            'status_id'  => Auth::user()->status_id ?? ACTIVE, // In case user have no status set it to active
+            'status_id'  => $status_id, // In case user have no status set it to active
             'start_date' => date('Y-m-d H:i:s'),
         ]);
 
-        // Declare auth status id
-        Auth::user()->status_id = $session->status_id;
-        Auth::user()->save();
-
-        // Send status notification
-        event(new UserStatusEvent([
-            'user_id'    => Auth::user()->id,
-            'status_id'  => Auth::user()->status_id,
-            'company_id' => Auth::user()->active_company_id
-        ]));
+        // Declare new status
+        $this->statusRepository->changeStatus($session->status_id,$session);
 
         return $session;
     }
@@ -61,6 +61,8 @@ class SessionRepository extends BaseRepository{
                 'company_id' => $session->company_id,
                 'event'      => 'close_session'
             ]));
+
+            $this->statusRepository->changeStatus(null,$session);
         }
 
         // Return response
@@ -70,14 +72,14 @@ class SessionRepository extends BaseRepository{
     /*** Get All Sessons */
     public function getAllSessions()
     {
-        $sessions = $this->where('company_id',Auth::user()->active_company_id)->whereYear('end_date',date('Y'))->get();
+        $sessions = Session::where('company_id',Auth::user()->active_company_id)->whereYear('end_date',date('Y'))->get();
         return $sessions;
     }
 
     /*** Get session reports */
     public function getSessionsReport()
     {
-        $sessions = self::where('company_id',1)->where('end_date','!=',null)->get(['total_session_time','end_date','status_id']);
+        $sessions = Session::where('company_id',1)->where('end_date','!=',null)->get(['total_session_time','end_date','status_id']);
 
         // Get total hour achieved
         $total_hours = $sessions->groupBy(function ($session) {
