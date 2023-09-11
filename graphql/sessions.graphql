@@ -1,11 +1,11 @@
 extend type Query {
-    sessions:  [Session] @field(resolver: "App\\GraphQL\\Queries\\SessionQuery@getAllSessions") @authorized
-    sessionStatistics: SessionStatistics @field(resolver: "App\\GraphQL\\Queries\\SessionQuery@getSessionsReport") @authorized @can(ability: "isRootUser",model: "App\\Models\\User")
+    sessions:  [Session] @field(resolver: "App\\GraphQL\\Queries\\SessionQuery@getAllSessions") @guard
+    sessionStatistics: SessionStatistics @field(resolver: "App\\GraphQL\\Queries\\SessionQuery@getSessionsReport") @guard @can(ability: "isRootUser",model: "App\\Models\\User")
 }
 
 extend type Mutation {
-    opensession: Session @field(resolver: "App\\GraphQL\\Mutations\\SessionMutation@openSession") @authorized 
-    closesession: Session @field(resolver: "App\\GraphQL\\Mutations\\SessionMutation@closeSession") @authorized
+    opensession: Session @field(resolver: "App\\GraphQL\\Mutations\\SessionMutation@openSession") @guard 
+    closesession: Session @field(resolver: "App\\GraphQL\\Mutations\\SessionMutation@closeSession") @guard
 }
 
 type Session {
