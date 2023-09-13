@@ -13,10 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('inputs', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->foreignId('project_id');
+            $table->string('type');
+            $table->string('label');
+            $table->boolean('searchable')->default(false);
+            $table->boolean('view_latest')->default(false);
+            $table->boolean('record_total')->default(false);
+            $table->boolean('record_avg')->default(false);
             $table->timestamps();
         });
     }
@@ -28,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('projects');
+        Schema::dropIfExists('inputs');
     }
 };

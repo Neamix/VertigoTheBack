@@ -21,6 +21,7 @@ class ProjectRepository extends BaseRepository {
     public function upsertInstance($projectData)
     {
         dd($inputData['label']);
+
         // Create project
         $project = Project::updateOrCreate([
             'id' => $projectData['id'] ?? null

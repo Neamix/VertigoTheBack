@@ -1,6 +1,6 @@
 # Query
 extend type Query {
-    user(id: ID @eq): User @find  @test
+    user(id: ID @eq): User @find 
     userWithEmail(email: String @eq): User @find
     users(input: UserFilterInput): [User] @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\UserQuery@filterUser") @authorized
     checkOtp(input: UserOtp): UserResetResponse @field(resolver:"App\\GraphQL\\Queries\\UserQuery@checkOtp")
@@ -16,7 +16,6 @@ extend type Mutation {
     forgetPassword(input: UserForgetPasswordInput): String @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@forgetPassword")
     resetPassword(input: UserResetPasswordInput): LoginResponse @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@resetPassword")
     acceptInvitation(input: UserInvitationInput): LoginResponse @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@acceptInvitation")
-    profile(input: UserProfileInput): User @field(resolver:"App\\GraphQL\\Mutations\\UserMutation@profileEdit") @guard
     inviteMember(input: inviteMemberInput): PendingEmails @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@inviteMember") @guard @can(ability: "isRootUser",model: "App\\Models\\User")
     switchCompany(companyid: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@switchCompany") @guard @validator
     toggleUserSuspended(user_id: ID): Response @field(resolver: "App\\GraphQL\\Mutations\\UserMutation@toggleUserSuspended") @validator @can(ability: "isRootUser",model:"App\\Models\\User") @guard
