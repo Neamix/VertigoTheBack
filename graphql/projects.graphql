@@ -1,27 +1,53 @@
 extend type Query {
-    
+    projectform(id: ID): Project  @find
 }
 
 extend type Mutation {
-    
+    upsertproject(input: ProjectUpsert): Project  @field(resolver:"App\\GraphQL\\Mutations\\ProjectMutation@upsertInstance")
+}
+
+input ProjectUpsert {
+    id: ID,
+    name: String,
+    description: String,
+    inputs: [Inp],
+    accessableMembers: [AccessableMembers]
+}
+
+input Inp {
+    id: ID,
+    label: String,
+    type: String,
+    options: [Opt]
+}
+
+input Opt {
+    id: ID,
+    sort: Int,
+    value: String
+}
+
+input AccessableMembers {
+    user_id: ID,
+    permission: Int
 }
 
 type Project {
     id: ID,
     name: String,
     description: String,
-    input: Input @hasMany,
-    members: User @belongToMany
+    inputs: [Input] @hasMany,
+    members: User @belongsToMany
 }
 
 type Input {
     id: ID,
     sort: Int,
-    type: String,
+    typ: String,
     label: String,
     searchable: Boolean,
     viewlatest: Boolean,
-    options: Option @hasMany
+    options: [Option] @hasMany
 }
 
 type Option {

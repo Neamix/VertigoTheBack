@@ -8,3 +8,4 @@ scalar Arr    @scalar(class: "App\\GraphQL\\Scalars\\Arr")
 #import billing.graphql
 #import sessions.graphql
 #import status.graphql
+#import projects.graphql
