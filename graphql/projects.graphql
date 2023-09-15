@@ -1,12 +1,13 @@
 extend type Query {
     projectform(id: ID): Project  @find
+    projectSearch(input: ProjectFilterInput): [Project]  @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\ProjectQuery@") @authorized
 }
 
 extend type Mutation {
     upsertproject(input: ProjectUpsert): Project  @field(resolver:"App\\GraphQL\\Mutations\\ProjectMutation@upsertInstance")
 }
 
-input ProjectUpsert {
+input ProjectUpsert @validator {
     id: ID,
     name: String,
     description: String,
@@ -15,9 +16,15 @@ input ProjectUpsert {
 }
 
 input Inp {
+    index: Int,
     id: ID,
     label: String,
     type: String,
+    sort: Int,
+    searchable: Boolean,
+    view_latest: Boolean,
+    record_total: Boolean,
+    record_avg: Boolean,
     options: [Opt]
 }
 
@@ -30,6 +37,10 @@ input Opt {
 input AccessableMembers {
     user_id: ID,
     permission: Int
+}
+
+input ProjectFilterInput {
+    name: String
 }
 
 type Project {

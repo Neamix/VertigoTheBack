@@ -20,8 +20,6 @@ class ProjectRepository extends BaseRepository {
     */
     public function upsertInstance($projectData)
     {
-        dd($inputData['label']);
-
         // Create project
         $project = Project::updateOrCreate([
             'id' => $projectData['id'] ?? null
@@ -38,7 +36,7 @@ class ProjectRepository extends BaseRepository {
         // Update/Create inputs
         foreach ($projectData['inputs'] as $inputData) {
             $input = $project->inputs()->updateOrCreate([
-                'id'    => $input['id'] ?? null
+                'id'    => $inputData['id'] ?? null
             ],[
                 'type'  => $inputData['type'],
                 'label' => $inputData['label'],
@@ -62,6 +60,17 @@ class ProjectRepository extends BaseRepository {
         }
 
         return $project;
+    }
+
+
+    /** filter Project 
+     *  @param args 
+     *  @return Paginate
+    */
+
+    public function filter($args)
+    {
+        return Project::filter($args)->paginate($args['first']);
     }
 
 }

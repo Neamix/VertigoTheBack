@@ -11,6 +11,16 @@ class Project extends Model
 
     protected $guarded = [];
 
+    // Scopes
+    public function filter($query,$request) 
+    {
+        if ( isset($request['name']) ) {
+            $query->where('name','like',$request['name']);
+        }
+
+        return $query;
+    }
+
     // Relations
     public function inputs()
     {
