@@ -1,0 +1,69 @@
+extend type Query {
+    projectform(id: ID): Project  @find
+    projectSearch(input: ProjectFilterInput): [Project]  @paginate(defaultCount:10 resolver:"App\\GraphQL\\Queries\\ProjectQuery@filterProject") @guard
+}
+
+extend type Mutation {
+    upsertproject(input: ProjectUpsert): Project  @field(resolver:"App\\GraphQL\\Mutations\\ProjectMutation@upsertInstance") @guard
+}
+
+input ProjectUpsert @validator {
+    id: ID,
+    name: String,
+    description: String,
+    inputs: [Inp],
+    accessableMembers: [AccessableMembers]
+}
+
+input Inp {
+    index: Int,
+    id: ID,
+    label: String,
+    type: String,
+    sort: Int,
+    searchable: Boolean,
+    view_latest: Boolean,
+    record_total: Boolean,
+    record_avg: Boolean,
+    options: [Opt]
+}
+
+input Opt {
+    id: ID,
+    sort: Int,
+    value: String
+}
+
+input AccessableMembers {
+    user_id: ID,
+    permission: Int
+}
+
+input ProjectFilterInput {
+    name: String
+}
+
+type Project {
+    id: ID,
+    name: String,
+    description: String,
+    inputs: [Input] @hasMany,
+    created_date: String,
+    accessableMembers: [User] @belongsToMany
+}
+
+type Input {
+    id: ID,
+    sort: Int,
+    typ: String,
+    label: String,
+    searchable: Boolean,
+    viewlatest: Boolean,
+    options: [Option] @hasMany
+}
+
+type Option {
+    id: ID,
+    sort: Int,
+    value: String
+}

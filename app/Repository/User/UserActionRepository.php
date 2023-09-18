@@ -4,10 +4,17 @@ namespace App\Repository\User;
 
 use App\Events\MemberSuspend;
 use App\Models\User;
+use App\Repository\Status\StatusRepository;
 use Illuminate\Support\Facades\Auth;
 use Prettus\Repository\Eloquent\BaseRepository;
 
 class UserActionRepository extends BaseRepository {
+    protected $statusRepository;
+
+    public function __construct(StatusRepository $statusRepository)
+    {
+        $this->statusRepository = $statusRepository;
+    }
 
     public function model()
     {
@@ -73,12 +80,17 @@ class UserActionRepository extends BaseRepository {
     public function deleteUser($user_id) 
     {   
         // Delete relation between selected memeber and active company of authed memeber
-        Auth::user()->company->detach($user_id);
+        Auth::user()->activeCompany->users()->detach($user_id);
 
         // Return response
         return [
             'status' => "Success"
         ];
+    }
+
+    public function changeStatus($status_id)
+    {
+        return $this->statusRepository->changeStatus($status_id);
     }
 
 }

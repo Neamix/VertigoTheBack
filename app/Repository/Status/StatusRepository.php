@@ -3,18 +3,11 @@
 namespace App\Repository\Status;
 
 use App\Events\UserStatusEvent;
-use App\Repository\Session\SessionRepository;
+use App\Models\Status;
 use Illuminate\Support\Facades\Auth;
 use Prettus\Repository\Eloquent\BaseRepository;
 
 class StatusRepository extends BaseRepository{
-
-    protected $sessionRepository;
-
-    public function __construct(SessionRepository $sessionRepository)
-    {
-        $this->sessionRepository = $sessionRepository;
-    }
 
     public function model () 
     {
@@ -26,15 +19,11 @@ class StatusRepository extends BaseRepository{
      *  @param status_id int
     */
 
-    public function changeStatus($status_id) 
+    public function changeStatus($status_id = ACTIVE,$session) 
     {
         // Change status id
         Auth::user()->status_id = $status_id;
         Auth::user()->save();
-
-        // Close sessions if exists and open new one
-        $this->sessionRepository->closeSession();
-        $session = $this->sessionRepository->openSession();
 
         // Send status notification
         event(new UserStatusEvent([

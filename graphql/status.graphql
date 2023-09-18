@@ -1,10 +1,4 @@
 # Mutation
 extend type Mutation {
-    switchStatus(status_id: Int): StatusChange @field(resolver:"App\\GraphQL\\Mutations\\StatusMutation@statusSwitch") @guard
-}
-
-# Types
-type StatusChange {
-    statusid: ID,
-    session: Session
+    switchStatus(status_id: Int): Session @field(resolver:"App\\GraphQL\\Mutations\\StatusMutation@statusSwitch") @guard
 }
