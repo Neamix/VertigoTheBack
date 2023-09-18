@@ -4,20 +4,18 @@ namespace App\Repository\Project;
 
 use App\Models\Option;
 use App\Models\Project;
+use Illuminate\Support\Facades\Auth;
 use Prettus\Repository\Eloquent\BaseRepository;
+use Illuminate\Support\Str;
 
 class ProjectRepository extends BaseRepository {
-
+    
     public function model()
     {
         return Project::class;
     }
 
-    /**
-     * Upsert instance
-     * @param Project upsert project
-     * @return array
-    */
+    /*** Upsert instance*/
     public function upsertInstance($projectData)
     {
         // Create project
@@ -25,7 +23,9 @@ class ProjectRepository extends BaseRepository {
             'id' => $projectData['id'] ?? null
         ],[
             'name' => $projectData['name'],
-            'description' => $projectData['description'] ?? null
+            'slug' => Str::slug($projectData['name']),
+            'company_id'  => Auth::user()->active_company_id,
+            'description' => $projectData['description'] ?? null,
         ]);
 
         // Sync Members
@@ -62,15 +62,9 @@ class ProjectRepository extends BaseRepository {
         return $project;
     }
 
-
-    /** filter Project 
-     *  @param args 
-     *  @return Paginate
-    */
-
+    /** Filter Project */
     public function filter($args)
     {
-        return Project::filter($args)->paginate($args['first']);
+        return Project::filter($args['input'])->paginate($args['first']);
     }
-
 }

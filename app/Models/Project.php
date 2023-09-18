@@ -12,13 +12,19 @@ class Project extends Model
     protected $guarded = [];
 
     // Scopes
-    public function filter($query,$request) 
+    public function scopeFilter($query,$request) 
     {
         if ( isset($request['name']) ) {
-            $query->where('name','like',$request['name']);
+            $query->where('name','like','%'.$request['name'].'%');
         }
 
         return $query;
+    }
+
+    // Attributes
+    public function getCreatedDateAttribute()
+    {
+        return date('d M Y',strtotime($this->created_at));
     }
 
     // Relations

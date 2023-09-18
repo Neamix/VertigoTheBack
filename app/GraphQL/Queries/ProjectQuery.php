@@ -25,6 +25,6 @@ final class ProjectQuery
     /*** Filter Project In Company */
     public function filterProject($_, array $args)
     {
-        $this->projectRepository->filter($args);
+        return $this->projectRepository->filter($args);
     }
 }
